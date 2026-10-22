@@ -1,0 +1,772 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Temenos AA Loan — Knowledge Management</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  body{font-family:'Inter',sans-serif}
+  code,.mono{font-family:'JetBrains Mono',monospace}
+  .navbtn.active{background:#1e3a8a;color:#fff}
+  .fade{animation:fade .25s ease}
+  @keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+  .chip{font-size:11px;padding:2px 8px;border-radius:999px;font-weight:600}
+  details>summary{cursor:pointer;list-style:none}
+  details>summary::-webkit-details-marker{display:none}
+  ::-webkit-scrollbar{width:8px;height:8px}::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:8px}
+</style>
+</head>
+<body class="bg-slate-100 text-slate-800">
+
+<div class="flex h-screen overflow-hidden">
+  <!-- SIDEBAR -->
+  <aside class="w-64 bg-white border-r border-slate-200 flex flex-col shrink-0">
+    <div class="p-4 border-b border-slate-200">
+      <div class="font-extrabold text-lg text-blue-900 leading-tight">Temenos Knowledge<br>Management</div>
+      <div class="text-xs text-slate-500 mt-1">T24 AA — Loans (R10.3)</div>
+    </div>
+    <nav class="flex-1 overflow-y-auto p-3 space-y-1 text-sm" id="nav">
+      <button data-sec="home" class="navbtn w-full text-left px-3 py-2 rounded-lg hover:bg-slate-100 font-medium">🏠 Beranda</button>
+      <div class="pt-2 px-3 text-[11px] font-bold text-slate-400 uppercase tracking-wider">Pembelajaran</div>
+      <button data-sec="konsep" class="navbtn w-full text-left px-3 py-2 rounded-lg hover:bg-slate-100 font-medium">1. Konsep Dasar AA</button>
+      <button data-sec="tabel" class="navbtn w-full text-left px-3 py-2 rounded-lg hover:bg-slate-100 font-medium">2. Tabel &amp; Struktur Data</button>
+      <button data-sec="propclass" class="navbtn w-full text-left px-3 py-2 rounded-lg hover:bg-slate-100 font-medium">3. Property Class Explorer</button>
+      <button data-sec="product" class="navbtn w-full text-left px-3 py-2 rounded-lg hover:bg-slate-100 font-medium">4. Membangun Produk</button>
+      <button data-sec="activities" class="navbtn w-full text-left px-3 py-2 rounded-lg hover:bg-slate-100 font-medium">5. Aktivitas, Simulasi &amp; Reverse</button>
+      <button data-sec="balance" class="navbtn w-full text-left px-3 py-2 rounded-lg hover:bg-slate-100 font-medium">6. Balance &amp; Accounting</button>
+      <div class="pt-2 px-3 text-[11px] font-bold text-slate-400 uppercase tracking-wider">Interaktif</div>
+      <button data-sec="quiz" class="navbtn w-full text-left px-3 py-2 rounded-lg hover:bg-slate-100 font-medium">🧠 Quiz &amp; Latihan</button>
+      <button data-sec="sim" class="navbtn w-full text-left px-3 py-2 rounded-lg hover:bg-slate-100 font-medium">🧮 Kalkulator Loan Simulator</button>
+      <button data-sec="glosarium" class="navbtn w-full text-left px-3 py-2 rounded-lg hover:bg-slate-100 font-medium">📖 Glosarium</button>
+      <button data-sec="chatbot" class="navbtn w-full text-left px-3 py-2 rounded-lg hover:bg-slate-100 font-medium">💬 Chatbot AA Loan</button>
+    </nav>
+    <div class="p-3 text-[10px] text-slate-400 border-t border-slate-200">Sumber: Arrangement Architecture – Loans (Temenos, 441 slide)</div>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="flex-1 overflow-y-auto" id="main"></main>
+</div>
+
+<script>
+/* ====== DATA ====== */
+const PC = [
+{id:'CUSTOMER',name:'Customer',attr:'DATED, NON.TRACKING',prefix:'— (null)',mandatory:'Wajib',klik:'Mandatory untuk semua Arrangement.',
+ pts:['Mandatory — tidak bisa Tracking, bersifat Dated.','Balance Prefix = Null.','Product Condition: Owner, Primary Owner, Other Party, Role & Notes — biasanya Negotiable di level Arrangement.','Primary Owner dipakai untuk Accounting, Reporting & Limit; tidak bisa diubah setelah Arrangement di-authorise.','Other Party (Guarantor, Co-signatory) didefinisikan di tabel AA.PARTY.ROLE.','Limit yang bisa dipakai hanyalah limit milik Primary Owner.'],
+ ws:'Workshop 1–2: lihat Property Class CUSTOMER, buat Property & Product Condition dengan semua atribut negotiable tanpa restriksi.'},
+{id:'ACCOUNT',name:'Account',attr:'DATED',prefix:'CUR, DUE, AGE, UNC, UND',klik:'Akun yang menampung saldo pokok Arrangement.',
+ pts:['Dibutuhkan untuk semua Arrangement finansial; menampung saldo Principal.','Category: Customer-type 1000–9999, Non-contingent (hindari range Nostro/Vostro), biasanya Non-Negotiable.','Posting Restrict: bisa override untuk Debit / Credit / semua transaksi.','Title, Short Title & Mnemonic bisa diubah di level Arrangement.','Currency: default dari Activity New Arrangement; tidak bisa diubah setelah authorisation.','Base Date Type: AGREEMENT (mulai dari tanggal arrangement) atau START (dari disbursement pertama).','Bus Day Centres: holiday table negara/region; Date Convention: Forward/Backward/Forward Same Month/Calendar; Date Adjustment: VALUE atau PERIOD.'],
+ ws:'Workshop 3–4: buat Property ACCOUNT, lalu Product Condition: Category 3107, Base Date Type AGREEMENT, CATEGORY non-negotiable.'},
+{id:'OFFICERS',name:'Officers',attr:'DATED, TRACKING',prefix:'—',klik:'Petugas yang bertanggung jawab atas Produk/Arrangement.',
+ pts:['Bisa Tracking; Update Action mengubah nilai field di level Arrangement; tidak menghasilkan accounting entry.','Primary Officer: officer utama, Id-nya disalin ke record account; valid di DEPT.ACCT.OFFICER.','Other Officers punya Role yang valid di AA.OFFICER.ROLE.','Default officer = Account Officer di record CUSTOMER.'],
+ ws:'Workshop 5–6: Other Officer code 20 & 21 dengan role Application & Approval; DEFAULT.NEGOTIABLE = Yes.'},
+{id:'TERM.AMOUNT',name:'Term Amount',attr:'CCY, DATED, NON.TRACKING',prefix:'CUR, TOT',klik:'Jumlah komitmen (commitment) dan jangka waktu pinjaman.',
+ pts:['Mewakili Committed Amount + Repayment Term; currency specific.','Committed Amount: jumlah yang dipinjamkan; Change Amount untuk menaikkan/menurunkan commitment di level Arrangement.','Repayment Term: periode pelunasan; Maturity Date dihitung dari Agreement Date + Term.','Revolving: No / Payment / Prepayment — mengembalikan available commitment saat repayment.','Update Limits: update atau tidak record LIMIT dengan commitment amount.','Disbursement tidak otomatis — dipicu transaksi dengan transaction code "disbursement" (FT, Teller, Cash Pooling); tunduk pada sisa commitment & Activity Restriction.'],
+ ws:'Workshop 7–8: default 40.000 (min 20.000, max 200.000 dengan override), term 3Y (1–5Y, di bawah 1Y boleh dengan override, di atas 5Y tidak), Revolving No non-negotiable.'},
+{id:'ACTIVITY.MAPPING',name:'Activity Mapping',attr:'DATED, MERGE, TRACKING.ONLY',prefix:'—',klik:'Jembatan antara aplikasi eksternal (FT/Teller) dan aktivitas AA.',
+ pts:['Hanya satu Property boleh ditempel di Product Group; nilai tidak bisa dilihat/diedit di level Arrangement.','Transaction Code aplikasi lain (FT via FT.TXN.TYPE.CONDITION, Teller via TELLER.TRANSACTION, Cash Pooling via AC.SWEEP.TYPE) memetakan ke AA Activity.','Default Activity untuk unmapped Transaction Code Debit & Credit bisa ditentukan.','Contoh: TXN 850 → LENDING-DISBURSE-COMMITMENT; TXN 851 → LENDING-APPLYPAYMENT-PR.PRINCIPAL.DECREASE.'],
+ ws:'Workshop 9–10: map TXN 850 & 851, Default Credit = LENDING-CREDIT-ARRANGEMENT, Default Debit = LENDING-DEBIT-ARRANGEMENT, DEFAULT.NEGOTIABLE No.'},
+{id:'INTEREST',name:'Interest',attr:'DATED, CCY, MULTIPLE, TRACKING, FORWARD.DATED',prefix:'ACC, DUE, AGE',klik:'Komponen bunga pinjaman (bisa lebih dari satu).',
+ pts:['Bank bisa punya beberapa interest property: principal interest, penalty interest, dst. (USD 5%, GBP 4%, dst.).','Tipe: Fixed (rate ditentukan), Floating (Id BASIC.RATE.TEXT / BASIC.INTEREST), Periodic (Id PERIODIC.INTEREST, default rate berdasarkan TERM, bisa di-interpolate, bisa di-reset berkala).','Jika user input rate sendiri, sistem tidak default dari BASIC.INTEREST/PERIODIC.INTEREST.','Tiered rates: SINGLE, LEVEL, BAND, MIXED — tiap tier bisa beda rate type, margin, min & max.','Tier Amount atau Tier Percent (tidak keduanya) untuk kalkulasi Band.','Interest Day Basis: A 360/360, B 366/360, C 366/366, D 360/366, E 366/365, F 360/365, dst.','Accrual Rule: include first / last / both; Compounding: DAILY, WEEKn, Mnn, TWMTH, Nnnn.','Calculation Threshold: max debit balance tanpa bunga; Negative Rate bisa diatur.','Activities: Accrue, Periodic Reset, Change — bisa memicu recalculation & perubahan Payment Schedule.'],
+ ws:'Workshop 11–14: buat condition fixed 6% (5,5–6,5% override, basis B, tier SINGLE), floating (BASIC.INTEREST 1, margin 0,5%→0,25–0,75%, min 7% max 9%, basis C), periodic (table 90, interpolasi, reset 2x setahun, margin 0,75%, basis A).'},
+{id:'PAYMENT.SCHEDULE',name:'Payment Schedule',attr:'DATED, CCY, FORWARD.DATED',prefix:'—',klik:'Aturan & jadwal bawaan pembayaran pinjaman.',
+ pts:['Payment Type: ACTUAL (repayment property terhitung: interest & charge), CONSTANT (annuity — butuh Term Amount + Interest property), LINEAR (butuh Term Amount), OTHER (user defined).','Payments Method: due atau capitalised; residual amount di tanggal pembayaran terakhir.','Payment Frequency vs Due Frequency (Due = frekuensi property dibuat jatuh tempo; utama & interest harus sama dengan payment frequency, charge boleh beda).','Billing: bill dibuat pada due date atau dimajukan beberapa hari; bill dengan due date sama bisa digabung.','Recalculation: terjadwal (RECALC.FREQUENCY) atau karena activity (ON.ACTIVITY: Disburse, Repay, Change Interest); RECALCULATE: Payment / Term / Residual / Nothing.','Tipe pembayaran khusus: one-off additional/special/zero, regular zero (seasonal), regular additional, regular special.','Bill = Make Due activity; dasar overdue & delinquency. Credit Balance menampung kelebihan bayar; otomatis dipakai saat bill due via field Repay from Credit Balance (APPLY.PAYMENT).'],
+ ws:'Workshop 15–18: interest-only monthly + recalc kuartalan; linear monthly single bill + recalc saat DISBURSE-COMMITMENT & CHANGE.TERM; constant weekly + recalc saat DISBURSE & CHANGE-REPAYMENT.SCHEDULE.'},
+{id:'LIMIT',name:'Limit',attr:'DATED, NON.TRACKING',prefix:'—',klik:'Referensi limit (plafon) untuk Arrangement.',
+ pts:['Limit Product ditunjukkan di field LIMIT.REFERENCE; umumnya level Arrangement & non tracking.','Limit harus milik Primary Owner.','Single Limit: Yes = eksklusif satu arrangement; No = dipakai arrangement mana pun milik customer sama.','Netting: saldo kredit arrangement ditambahkan ke overdraft limit untuk arrangement lain (hanya shared limit).','Arrangement boleh dibuat tanpa Limit — override muncul saat activity DISBURSE.'],
+ ws:'Workshop 19–20: limit shared + netting, hanya LIMIT.REFERENCE yang negotiable.'},
+{id:'PAYMENT.RULES',name:'Payment Rules',attr:'DATED, MULTIPLE, TRACKING',prefix:'—',klik:'Aturan alokasi dana saat pembayaran masuk.',
+ pts:['Satu pembayaran bisa diterapkan ke banyak bill dan banyak jenis amount.','Application Type: BILL.PROPERTY (bayar dues property tertentu lintas bill), BILL.DATE (bayar bill tertentu dulu, dalam bill urut property), CURRENT (langsung ke saldo current).','Payments Order: Oldest First / Oldest Last (tidak boleh untuk CURRENT).','Property Application Type: DUE atau CURRENT per property dalam Property Sequence.','Remainder Activity: menangani kelebihan pembayaran — memicu Payment Rules Property lain; jika gagal, diproses Default Activity di ACCOUNTING.','MAKE.BILL.DUE: boleh menagih bill yang belum jatuh tempo.'],
+ ws:'Workshop 21–23: bayar bill by property (PRINDECREASEFEE, DISBURSEMENTFEE, NEWARRFEE, PRINCIPALINT, ACCOUNT, oldest first, remainder → PR.PRINCIPAL.DECREASE, MAKE.BILL.DUE Yes) dan by bill date.'},
+{id:'OVERDUE',name:'Overdue',attr:'DATED, TRACKING',prefix:'—',klik:'Status aging tagihan (Grace, Delinquent, NAB).',
+ pts:['Hanya bisa TRACKING. Ageing status didefinisikan di virtual table AA.OVERDUE.STATUS (EB.LOOKUP).','Ageing Type: by days (numerik) atau by bills (angka + "B", mis. 1B, 2B); nilai 0 = overdue di hari yang sama (hanya boleh satu status).','Chaser Notice: notice otomatis N hari setelah status; bisa berkala.','Age All Bills: pada status tertentu semua bill di bawahnya di-age ke status itu (seluruh pinjaman menua).','Suspend Arrangement: berhenti booking P&L, accrual ke kategori CRF khusus — butuh AGE.ALL.BILLS = YES.','Move Balances: pindahkan amount ke Status Balance (mis. delinquent).','Value date accounting: DUE (tanggal jatuh tempo bill) / STATUS (tanggal pindah status) / kosong (financial date).','Tolerance: tidak meng-age jika outstanding dalam batas % dari bill atau nominal per currency; Tolerance Action = REPAY atau REMAIN.','Bill Settlement: Delinquent basis (deemed settled saat total repayment ≥ bill amount) atau Financial basis (semua saldo benar2 lunas). Activities pemicu: LENDING-APPLYPAYMENT-PAYMENT.RULES, LENDING-UPDATE-OVERDUE.'],
+ ws:'Workshop 24–26: Grace 1 hari; Delinquent 5 hari + notice; NAB 60 hari + suspend + age all bills; tolerance 2% REMAIN / USD 5 REPAY.'},
+{id:'CHARGE',name:'Charge',attr:'DATED, OPT.CCY, MULTIPLE, TRACKING, FORWARD.DATED',prefix:'ACC, DUE, AGE',klik:'Biaya-biaya (fee) pada pinjaman.',
+ pts:['Charge property boleh banyak; currency optional.','Charge Type: Flat (amount ditetapkan, mis. USD 50) atau Calculated (persentase dari balance, mis. 2% dari transaction amount).','Calculation Type: Flat / Percentage / Unit (USD 2 per transaction); Charge Rate wajib untuk Percentage, Charge Amount wajib untuk Flat & Unit.','Tiered: Level, Banded, Groups; Min & Max charge per tier (tidak untuk Flat).','Calculation Threshold: base amount minimum agar dihitung (bukan Flat).','Free Amount: potongan dari charge terhitung (rebate).'],
+ ws:'Workshop 27–30: Property SUSPEND; condition flat USD 100; tiered 0/2%/1,5%/1% dengan min-max; rebate 50.'},
+{id:'ACTIVITY.CHARGES',name:'Activity Charges',attr:'DATED, TRACKING, FORWARD.DATED',prefix:'—',klik:'Charge yang dipicu activity tertentu.',
+ pts:['Activity attracting charge: valid di AA.ACTIVITY; berapa pun activity bisa didefinisikan.','Charge property terpicu saat activity terjadi; bisa dibiayakan (billed) saat kejadian atau ditunda beberapa hari.','Bisa billed atau capitalised; tidak ikut aging. Contoh: disbursement charge, arrangement fee.'],
+ ws:'Workshop 31–32: charge saat arrangement dibuka, property NEWARRFEE, dibuat DUE saat activity.'},
+{id:'CHARGE.OVERRIDE',name:'Charge Override',attr:'DATED, NON.TRACKING, TRIGGER',prefix:'—',klik:'Kontrol amount charge yang bisa dimodifikasi/waived user.',
+ pts:['Muncul di arrangement setelah activity charge tervalidasi.','Charge Actual Amount: Null = default CHG.AMT dipakai; 0 = charge di-waive sepenuhnya; angka = amount baru (jika negotiable).','Jika lebih dari satu charge untuk activity sama, user bisa modify/waive semuanya.','Charge saat payoff, repayment & disbursement tidak bisa dimodifikasi/waived.'],
+ ws:'Workshop 33–34: 3 charge property (NEWARRFEE, DISBURSEMENTFEE, PRINDECREASEFEE), NEWARRFEE = 500.'},
+{id:'PERIODIC.CHARGES',name:'Periodic Charges',attr:'DATED, OPT.CCY',prefix:'—',klik:'Pengaturan deferred charge berkala.',
+ pts:['INC.ALL.DEF.CHGS: pada tanggal terjadwal, semua deferred charge dijadikan due.','DEFERRED.CHARGE: charge yang di-defer (multi-value).','Keduanya bisa di set di level product atau arrangement.']},
+{id:'ACTIVITY.RESTRICTION',name:'Activity Restriction',attr:'DATED, CCY, MULTIPLE, TRACKING, FORWARD.DATED',prefix:'—',klik:'Pembatasan penuh atau parsial atas sebuah activity.',
+ pts:['Multiple properties; product condition harus dibuat per currency.','Full restriction: activity tidak boleh dijalankan sama sekali (error message wajib).','Partial/conditional: boleh dengan override (override message wajib) — mis. >5 repayment/tahun, disbursement kelipatan 100.','Dikontrol Periodic Rules. Periodic attributes bawaan: CURRENT/TOTAL LOAN REPAY TOLERANCE, TRANSACTION AMOUNT MINIMUM/MAXIMUM/MULTIPLE/TOTAL, TRANSACTION COUNT TOTAL.'],
+ ws:'Workshop 39–41: larang change of term (error AC-CANT.ENT.PENDING.CAT.CODE); minimum disbursement 200 dengan override.'},
+{id:'CHANGE.PRODUCT',name:'Change Product',attr:'DATED, TRACKING',prefix:'—',klik:'Perpindahan arrangement ke produk lain.',
+ pts:['Allowed Product: daftar produk tujuan; kosong = semua; hanya sesama Product Group.','Scheduled switch: CHANGE.DATE (tanggal spesifik, date convention diabaikan), CHANGE.PERIOD, PRIOR.DAYS (switch dimajukan; nilai efektif = schedule date).','Change Activity: ROLLOVER / RESET / CHANGE.PRODUCT — wajib jika renewal date ditentukan.','Mayoritas kondisi ditimpa default produk baru; kecuali Customer, Account, Term Amount & Limit.','Status di AA.ARRANGEMENT: PROCESSED / CURRENT / SCHEDULED.','RENEGOTIATE: ubah kondisi banyak property sekaligus.'],
+ ws:'Workshop 43–44: change period 6 bulan, activity LENDING-RESET-ARRANGEMENT, switch 3 hari di muka.'},
+{id:'PAYOFF',name:'Payoff',attr:'DATED, TRACKING',prefix:'—',klik:'Simulasi & pelunasan dini penuh.',
+ pts:['Expiry days: hari kerja berlaku payoff bill; payoff dihapus setelah expiry.','Settlement activity otomatis saat payoff disimulasikan / dibayar via activity SETTLE.','Auto settlement future dues (jika Yes, Settlement Due Activity wajib — memicu Apply Payment).','Payoff statement = informasi customer, lewat simulation activity (SIMULATION.RUNNER, activity LENDING-CALCULATE-PAYOFF).','Prepayment charge bisa berupa activity charge atau periodic rule charge.','Credit di UNC Account property otomatis dipakai menyetel dues.'],
+ ws:'Workshop 45–46: settlement LENDING-APPLYPAYMENT-PR.CURRENT.BALANCES, auto settlement → PR.PAYOFF.'},
+{id:'SETTLEMENT',name:'Settlement',attr:'CCY, DATED',prefix:'—',klik:'Metode settlement pembayaran (Direct Debit).',
+ pts:['Settlement method: hanya DD (Direct Debit).','Mandate reference: record DD.DDI (status AVAILABLE), di-update via activity LENDING-UPDATE-SETTLEMENT.','Akun arrangement harus currency lokal perusahaan; DD transaction code harus dipetakan via ACTIVITY.MAPPING.','Remainder activity PAYMENT.RULES harus LENDING-CREDIT-ARRANGEMENT; payment rules DD diset di APPLY.PAYMENT (PAYMENT.SCHEDULE).','Payment type: ACTUAL, CONSTANT, LINEAR, CHARGE; bisa satu mandate untuk charge dan satu untuk principal/interest.'],
+ ws:'Workshop 47–48: settlement ACTUAL & LINEAR via DD.'},
+{id:'CLOSURE',name:'Closure',attr:'DATED, TRACKING',prefix:'—',klik:'Penutupan arrangement.',
+ pts:['Closure Type: MATURITY (proses saat maturity date) atau BALANCE (saat semua saldo nol).','Closure Method: Automatic atau Manual.','Closure Period: kapan activity CLOSURE diproses untuk closure otomatis.','Posting Restrict: code posting restriction penutupan account.'],
+ ws:'Workshop 49–51: otomatis saat maturity / saldo nol, period 10 hari / nil, posting restriction 90.'},
+{id:'ACCOUNTING',name:'Accounting',attr:'DATED, MERGE, TRACKING.ONLY',prefix:'—',klik:'Aturan accounting (alokasi) tiap property.',
+ pts:['Tidak bisa dilihat/diedit di level Arrangement; Update Action tidak menghasilkan accounting entry.','Rules untuk setiap property yang butuh accounting entries: ACCT.ACTION (action property; harus ACTION dengan ACCOUNTING=Yes di AA.PROPERTY.CLASS.ACTION), ACCT.RULE (valid di AC.ALLOCATION.RULE), PROPERTY.','Amortisasi charge/komisi: ACCRUE.AMORT = AMORT, ACCRUE.PERIOD = MATURITY atau period (1M, 1Y).'],
+ ws:'Workshop 64–65: lihat condition LENDING dan allocation rules tiap action property.'},
+{id:'BALANCE.MAINTENANCE',name:'Balance Maintenance',attr:'DATED, NON.TRACKING, CCY, MULTIPLE, ARRANGEMENT',prefix:'—',klik:'Migrasi & penyesuaian saldo/bill (take-over).',
+ pts:['Untuk take-over kontrak dari sistem legacy / modul lending T24 lama ke AA.','Actions: Capture Bill, Capture Balance, Adjust Bill, Adjust Balance, Write Off Bill, Write Off Balance, Adjust All.','Tanggal capture/adjust sebelum start date arrangement; sisi lainnya via allocation rules (suspense/wash account).','Urutan migrasi: take-over arrangement → capture outstanding principal → capture overdue bills → capture accruals.'],
+ ws:'Workshop 70–71: buat property & product condition, semua atribut negotiable.'},
+{id:'PRESENTATION',name:'Presentation',attr:'—',prefix:'—',klik:'Tampilan/layer presentasi arrangement.',pts:['Mengatur bagaimana arrangement ditampilkan (layer presentation, default LENDING untuk retail lending).']},
+{id:'MESSAGING',name:'Messaging',attr:'—',prefix:'—',klik:'Pesan/notifikasi terkait activity.',pts:['Mengatur pesan yang terkait dengan activity arrangement (mis. chaser notice, notice messaging).']},
+{id:'API',name:'API',attr:'—',prefix:'—',klik:'Antarmuka API activity.',pts:['Menyediakan aktivitas layanan API untuk arrangement (mis. payoff service, activity API mapping).']}
+];
+
+const KB = [
+{k:'aa arrangement overview product loan',a:'AA Arrangement adalah kontrak pinjaman (loan) yang dibangun dari komponen Property Class. Overview produk AA Loan mencakup: Arrangement Level (Constant / Fixed / Floating; Periodic / Linear / Repayment; User defined Band / Limit / Bullet; Mixed; Actual). Arrangement Conditions berasal dari Loan Product; Disbursement bisa Single atau Multiple, Negotiable atau Non-Negotiable; ada Loan Tracking / Non Tracking Account, Bills for payment, Excess & Under payment.'},
+{k:'dependencies customer account core delivery accounting limits static tables',a:'AA menggunakan dependensi: CUSTOMER, ACCOUNT, core dependencies (Delivery, Accounting, Limits) dan tabel-tabel Static lainnya.'},
+{k:'interest related basic.rate.text floating periodic offer rate generated daily back dated',a:'Dependensi Interest AA: BASIC.RATE.TEXT (floating interest) dan BASIC.INTEREST. Offer rate digunakan untuk AA Loans; generated daily dan perubahan back-dated juga dimungkinkan. Periodic interest memakai tabel PERIODIC.INTEREST.'},
+{k:'currency country region holiday currency.param currency market bus.day.centres',a:'Dependensi Currency: COUNTRY, REGION, HOLIDAY, CURRENCY.PARAM, CURRENCY, CURRENCY.MARKET. Negara/Region bisa ditunjuk di field BUS.DAY.CENTRES pada Account Product Condition sehingga saat input Arrangement, hari libur negara tsb dicek dan override digenerate. Currency dipakai di field CURRENCY pada tabel AA.PRODUCT.DESIGNER.'},
+{k:'interest day basis 360 366 365 a a1 a2 b c d e f day count',a:'Interest Day Basis = numerator/denominator: A 360/360; A1 360/360 (30 hari/bulan); A2 360/360 (360 hari/tahun, bunga tambahan Februari dihitung hari terakhir); B 366/360; C 366/366; D 360/366; E 366/365; F 360/365 (bunga Februari dihitung hari kedua terakhir); H 30/356; S special.'},
+{k:'tables building components re-usable property class periodic attribute activity source calc',a:'Tabel untuk membangun komponen reusable: AA.PROPERTY.CLASS, AA.PROPERTY, AA.PERIODIC.ATTRIBUTE.CLASS, AA.PERIODIC.ATTRIBUTE, AA.ACTIVITY.CLASS, AA.ACTIVITY, AA.PRD.DES.<PROPERTY.CLASS>, AA.SOURCE.CALC.TYPE, AA.PROPERTY.CLASS.ACTION. Yang dirilis Temenos: AA.PROPERTY.CLASS, AA.PERIODIC.ATTRIBUTE.CLASS, AA.PROPERTY.CLASS.ACTION, AA.ACTIVITY.CLASS. Yang di-setup saat implementasi: AA.PROPERTY, AA.PRD.DES.<PROPERTY.CLASS>, AA.PERIODIC.ATTRIBUTE, AA.SOURCE.CALC.TYPE — bisa dipakai lintas produk.'},
+{k:'aa.property.class type ccy opt.ccy dated multiple merge forward.dated tracking balance prefix product line lending',a:'AA.PROPERTY.CLASS dirilis Temenos untuk mendefinisikan Actions & Attributes. TYPE field mengontrol: CCY, OPT.CCY, DATED, MULTIPLE, MERGE, FORWARD.DATED, TRACKING, NON.TRACKING, TRACKING.ONLY, ARRANGEMENT, TRIGGER. Product Line prefix: ACCOUNTS, DEPOSITS, INTERNET.SERVICES, LENDING, PROXY.SERVICES, SAVINGS, OTHER. Balance prefix (BALANCE.PREFIX field): CUR, ACC, DUE, AGE, dll.'},
+{k:'aa.property named type instance product group suspend overdues product only accounting rules',a:'AA.PROPERTY adalah named type/instance dari Property Class, ditempel ke Product Group lalu diturunkan ke Product. Bila Property Class mengizinkan, beberapa property sekelas bisa dipakai dalam satu Product. TYPE property: PRODUCT.ONLY (detail tidak terlihat/diamenden di level Arrangement, mis. ACCOUNTING rules), SUSPEND (suspend income — hanya untuk INTEREST & CHARGE), SUSPEND.OVERDUES (suspend overdue income; hanya jika SUSPEND juga dipilih).'},
+{k:'aa.prd.des product condition fixed.rate currency effective date id',a:'AA.PRD.DES.<Property Class> mendefinisikan Product Condition per Property Class, mis. AA.PRD.DES.TERM.AMOUNT, AA.PRD.DES.ACCOUNT. Bisa dibuat beberapa kondisi berbeda dan beberapa record ber-tanggal. Field kondisi mewakili atribut Property Class. Date-specific bila property class DATED; currency-specific bila diizinkan (untuk multi-currency harus dibuat per currency; currency bisa OPT.CCY mis. Charge). Currency & Effective Date menjadi bagian Id, contoh: FIXED.RATE-USD-20100101; FIXED.INTEREST-GBP-20100101. Kondisi bisa ber-value date masa depan.'},
+{k:'default negotiable negotiation rules nr.attribute options type value message comparison error override fix value range',a:'Negotiation rules: DEFAULT.NEGOTIABLE (mandatory, Yes/No — apakah semua atribut bisa dinegosiasikan; attribute-level selalu menimpa). DEFAULT.ATTR.OPTION: RESETTING (kondisi direset dari produk saat rollover/reset/change product) atau NON-RESETTING (kondisi dipertahankan dari arrangement). Field per atribut: NR.ATTRIBUTE (atribut property class), NR.OPTIONS (negotiable / non-negotiable), NR.TYPE (COMPARISON.TYPE: Equal, Like, Range, Mandatory, Fix Value), NR.VALUE, NR.MESSAGE (ERROR atau OVERRIDE). Contoh: usual term 5 tahun, bisa dinegosiasikan hanya antara 3–10 tahun.'},
+{k:'aa.property.class.action actions accounting entry product line',a:'AA.PROPERTY.CLASS.ACTION menyimpan informasi action per PROPERTY CLASS: daftar action, apakah action menghasilkan accounting entry atau tidak, dan Product Line.'},
+{k:'customer property class primary owner other party guarantor party role limit sanctioned',a:'CUSTOMER Property Class: mandatory, non-tracking, dated, balance prefix null. Primary Owner dipakai untuk Accounting, Reporting & Limit dan tidak dapat diganti setelah authorisation; otomatis masuk daftar owner. Other owners ditambah manual. Other Party (Guarantor, Co-signatory) didefinisikan di AA.PARTY.ROLE. Hanya limit milik Primary Owner yang dapat dipakai. Customer harus record valid di aplikasi CUSTOMER.'},
+{k:'account property class category posting restrict title mnemonic base date type bus day centres date convention adjustment currency',a:'ACCOUNT Property Class: DATED, balance prefix CUR/DUE/AGE/UNC/UND. Menahan saldo principal. Category: Customer-type 1000–9999, non-contingent, non-negotiable. Posting Restrict (debit/credit/all → override). Title/Short Title/Mnemonic (mnemonic = alternate Id, bisa diubah di arrangement). Currency default dari New Arrangement Activity, tak bisa diubah setelah authorisation. Base Date Type: AGREEMENT / START (disbursement pertama). BUS.DAY.CENTRES (holiday), Date Convention (Forward/Backward/Forward Same Month/Calendar), Date Adjustment (VALUE / PERIOD, tidak berlaku untuk Calendar).'},
+{k:'officers property class primary officer dept.acct.officer role aa.officer.role account officer',a:'OFFICERS Property Class: DATED, TRACKING, update action tanpa accounting entry. Primary Officer = officer utama, Id-nya tersalin ke record account. Officer harus valid di DEPT.ACCT.OFFICER; role other officers valid di AA.OFFICER.ROLE (virtual table). Default = Account Officer di CUSTOMER.'},
+{k:'term amount property class committed amount maturity revolving prepayment update limit disbursement not automatic',a:'TERM.AMOUNT (CCY, DATED, NON.TRACKING; prefix CUR, TOT): Committed Amount (jumlah yang dilimpahkan), Change Amount (naik/turun commitment di level arrangement), Repayment Term, Maturity Date (dari Agreement Date + Term), Amount on Maturity (Due atau Outstanding), Revolving: No / Payment / Prepayment, Updating Limits (update record LIMIT atau tidak). Disbursement TIDAK otomatis — dipicu transaksi dengan transaction code disbursement (FT/Teller/Cash Pooling), tunduk sisa commitment & activity restriction.'},
+{k:'activity mapping property class transaction code ft teller cash pool default debit credit 850 851',a:'ACTIVITY.MAPPING (DATED, MERGE, TRACKING.ONLY; hanya 1 property per Product Group; tidak bisa dilihat di arrangement): memetakan Transaction Code dari aplikasi lain ke AA Activity. Rantai: Transaction Type ACDI → FT.TXN.TYPE.CONDITION → Transaction Code 850 → Activity LENDING-DISBURSE-COMMITMENT. Serupa untuk AC.CASH.POOL (AC.SWEEP.TYPE) dan TELLER (TELLER.TRANSACTION). Default activity untuk unmapped debit/credit codes bisa diset. Contoh workshop: 850 → LENDING-DISBURSE-COMMITMENT; 851 → LENDING-APPLYPAYMENT-PR.PRINCIPAL.DECREASE.'},
+{k:'interest property class fixed floating periodic tiered level banded mixed accrual rule compounding calculation threshold negative rate periodic period reset',a:'INTEREST (DATED, CCY, MULTIPLE, TRACKING, FORWARD.DATED; prefix ACC/DUE/AGE): Fixed (rate ditentukan), Floating (BASIC.RATE.TEXT), Periodic (PERIODIC.INTEREST, rate default per TERM, interpolasi antar periode, reset berkala; jika user input rate, default tidak dipakai). Tiered: single / LEVEL / BAND / MIXED (contoh level 5% s.d. 50000, 5,5% s.d. 100000, band 6% setelahnya); tiap tier bisa beda tipe rate, margin, min/max. Tier Amount ATAU Tier Percent (tidak keduanya). Interest Day Basis A/B/C/D/E/F; Accrual Rule (include first/last/both); Compounding DAILY, WEEKn, Mnn, TWMTH, Nnnn; Calculation Threshold (max debit balance tanpa bunga); Negative Rate; Periodic period (default Term). Activities: Accrue, Periodic Reset, Change → bisa memicu recalculation & perubahan schedule.'},
+{k:'payment schedule property class actual constant linear other payment frequency due frequency billing bill recalculation',a:'PAYMENT.SCHEDULE (DATED, CCY, FORWARD.DATED): Payment Type ACTUAL (repayment property terhitung), CONSTANT (annuity; butuh Term Amount + Interest property), LINEAR (butuh Term Amount), OTHER (user defined). Method due/capitalised; residual amount di pembayaran terakhir. Payment Frequency & Due Frequency (principal & interest harus sama dengan payment frequency; charge boleh beda; due frequency default ke payment frequency jika null). Billing: bill pada due date atau dimajukan N hari, bill same-date bisa digabung; repayment bisa % dari outstanding. Recalculation: RECALC.FREQUENCY (terjadwal) & ON.ACTIVITY (Disburse/Repay/Change interest), RECALCULATE = Payment/Term/Residual/Nothing. Tipe pembayaran: one-off additional/special/zero, regular zero (seasonal), regular additional/special.'},
+{k:'bill make due issue advance chaser fee combine single bill overdue delinquency basis',a:'Bill adalah Make Due activity di AA: pemberitahuan pembayaran berisi due date & proyeksi amount. Semua dues ditagih (principal, interest, charge), baik terjadwal maupun ad-hoc. Default diterbitkan pada due date; bisa issue in advance N hari kerja; chaser fee bisa ditautkan. Bill dengan due date sama & notice sama bisa digabung atau di-split untuk dibayar dari akun berbeda. Billed amount = dasar overdue/delinquency: dibayar tepat waktu = up to date; melewati due date = basis overdue processing.'},
+{k:'credit balance excess payment allocation rule repay from credit balance unallocated',a:'Credit Balance menahan posisi kredit positif dalam loan, dikredit via activity LENDING-CREDIT-ARRANGEMENT (remainder activity dalam payment). Fungsinya: menahan kelebihan bayar (overpaid) dan saldo paid-in-advance yang dipakai membayar bill berikutnya. Saat bill due & ada kredit, activity otomatis dipicu — ditentukan di field Repay from Credit Balance (APPLY.PAYMENT) di PAYMENT.SCHEDULE. Pembayaran bisa juga dialokasikan langsung ke credit di akun AA Loan.'},
+{k:'limit property class limit reference single limit netting shared disburse override without limit',a:'LIMIT (DATED, NON.TRACKING): Limit Product di LIMIT.REFERENCE, harus milik Primary Owner. Single Limit Yes = eksklusif untuk satu arrangement; No = boleh dipakai arrangement account lain milik customer yang sama. Netting (hanya shared limit): credit balance arrangement ditambahkan ke overdraft limit untuk arrangement lain. Arrangement boleh dibuat tanpa limit — override muncul saat activity DISBURSE.'},
+{k:'payment rules property class application type bill property bill date current oldest first remainder make bill due',a:'PAYMENT.RULES (DATED, MULTIPLE, TRACKING): mengalokasikan satu pembayaran ke banyak bill/amount. Application Type: BILL.PROPERTY (bayar property tertentu lintas bill, mis. penalty interest → maintenance → disbursement charge), BILL.DATE (bill demi bill; dalam bill urut property), CURRENT (langsung ke saldo current; tidak boleh pakai payments order). Payments Order: Oldest First / Oldest Last. Remainder Activity untuk kelebihan/ad-hoc (memicu payment rules property lain; jika gagal → Default Activity di ACCOUNTING). MAKE.BILL.DUE = menagih bill yang belum due. Activity terkait: Apply Payment.'},
+{k:'overdue property class ageing status grace delinquent non accrual basis nab chaser notice age all bills suspend tolerance bill settlement',a:'OVERDUE (DATED, TRACKING): Ageing status dari virtual table AA.OVERDUE.STATUS (EB.LOOKUP) mis. Grace, Delinquent, NAB. Ageing by days (angka) atau by bills (angka+B, mis. 1B); nilai 0 = overdue di hari due (hanya satu status boleh 0). Chaser Notice N hari setelah status, bisa berkala. Age All Bills: semua bill di bawah status di-age ke status tsb. Suspend Arrangement: stop P&L, accrual ke CRF — butuh AGE.ALL.BILLS YES. Move Balances ke Status Balance. Value date accounting: DUE / STATUS / blank (financial date). Tolerance: % dari bill atau nominal per currency; Tolerance Action REPAY / REMAIN. Bill Settlement: delinquent basis (deemed settled bila total repayment ≥ bill amount) vs financial basis (saldo benar2 lunas). Activities: LENDING-AGE-OVERDUE, LENDING-UPDATE-OVERDUE.'},
+{k:'charge property class flat calculated percentage unit tiered level banded groups minimum maximum threshold free amount rebate',a:'CHARGE (DATED, OPT.CCY, MULTIPLE, TRACKING, FORWARD.DATED; prefix ACC/DUE/AGE): Flat (amount tetap, mis. USD 50) atau Calculated (2% dari transaction amount, 3% dari commitment). Calculation Type: Flat / Percentage (butuh Charge Rate) / Unit (butuh Charge Amount, dikalikan). Tiered: Level / Banded / Groups. Min & Max per tier (tidak untuk Flat). Calculation Threshold: base minimum agar dihitung. Free Amount: potongan/rebate dari charge terhitung.'},
+{k:'activity charges property class billed capitalised deferred charge when activity performed disbursement charge annual fee break rule',a:'Jenis charge: Activity Charges (saat activity dilakukan, mis. disbursement charge; bisa billed atau capitalised, tidak aging), Scheduled Charges (pada hari tertentu sesuai loan schedule, mis. annual fee; billed/capitalised), Break Rule Charges (saat rule dilanggar, mis. jumlah disbursement per tahun melebihi batas — via Periodic Rules). Charge payment terms: kapan charge dibilled (mis. 5 hari sebelum effective date).'},
+{k:'charge override property class actual amount waive modify payoff',a:'CHARGE.OVERRIDE (DATED, NON.TRACKING, TRIGGER): muncul di arrangement setelah activity charge tervalidasi. Charge Actual Amount: Null = default charge (CHG.AMT); 0 = waived; angka = amount baru jika negotiable. Beberapa charge untuk satu activity bisa dimodifikasi/waived semuanya. Charge saat payoff/repayment/disbursement tidak bisa dimodifikasi atau di-waive.'},
+{k:'periodic attribute class periodic rules structure interest maximum minimum rate increase decrease tolerance term amount full disburse comparison type routine',a:'AA.PERIODIC.ATTRIBUTE.CLASS + AA.PERIODIC.ATTRIBUTE = Periodic Rules: rule yang berlaku pada periode/hidup arrangement. Struktur: Property Class → Action → Comparison Type (MINIMUM, MAXIMUM, ±BASISPOINTS, ±TOLERANCE, EQUAL, MULTIPLE, ±DIFFERENCE) → Data Type (AMT, PERIOD, A, D, N, R, DAO) → Routine (valid di EB.API, mis. AA.GET.RATE.VALUE, AA.GET.AMOUNT.VALUE, AA.GET.FULL.DISBURSE, AA.GET.ACTIVITY.VALUE/TOTAL/COUNT). PERIOD.TYPE: LIFE, INITIAL, REPEATING, ROLLING; PERIOD: 01D, 5M, 2Y; RULE.START: AGREEMENT, ANNIVERSARY, ARRANGEMENT, START; RULE.ERR.MSG / RULE.OVE.MSG untuk pesan error/override. Contoh INTEREST: MAXIMUM.RATE, MINIMUM.RATE, RATE.DECREASE(+TOLERANCE), RATE.INCREASE(+TOLERANCE). TERM.AMOUNT: AMOUNT.DECREASE/INCREASE(+TOLERANCE), FULL.DISBURSE. ACTIVITY.RESTRICTION: CURRENT/TOTAL.LOAN.REPAY.TOLERANCE, TRANSACTION.AMOUNT.MIN/MAX/MULTIPLE/TOTAL, TRANSACTION.COUNT.TOTAL.'},
+{k:'activity restriction property class full restriction partial conditional error override multiple of 100 repayments per year',a:'ACTIVITY.RESTRICTION (DATED, CCY, MULTIPLE, TRACKING, FORWARD.DATED; product condition per currency): Full restriction = activity tidak bisa dijalankan (error message wajib, mis. larangan change of term dengan pesan AC-CANT.ENT.PENDING.CAT.CODE). Partial/conditional = boleh dengan override (override message wajib), mis. >5 repayment per tahun, atau disbursement harus kelipatan 100. Bisa dikontrol Periodic Rules.'},
+{k:'change product property class allowed product scheduled switch rollover reset renegotiate parent processed current status',a:'CHANGE.PRODUCT (DATED, TRACKING): Allowed Product (kosong = semua; hanya satu Product Group). Scheduled switch: CHANGE.DATE (date convention diabaikan), CHANGE.PERIOD, PRIOR.DAYS (event dimajukan, efektif di schedule date, mis. switch 26 April efektif 1 Mei). Change Activity: ROLLOVER (renewal dengan kondisi lama/revisi; hanya kondisi TRACKING yang ditrack), RESET (pada payment end date; reset kondisi sesuai setup produk), CHANGE.PRODUCT (reset ke kondisi produk baru; DEFAULT.ATTR.OPTION harus RESETTING agar kondisi baru berlaku). ROLLOVER/RESET/CHANGE.PRODUCT boleh; mayoritas kondisi ditimpa produk baru kecuali Customer, Account, Term Amount & Limit. Status di AA.ARRANGEMENT: PROCESSED / CURRENT / SCHEDULED. RENEGOTIATE mengubah banyak kondisi sekaligus.'},
+{k:'payoff property class expiry days settlement activity simulation payoff statement prepayment charge',a:'PAYOFF (DATED, TRACKING): Expiry days (payoff dihapus setelah expiry date), Settlement activity otomatis saat simulate/payoff via SETTLE, auto settlement future dues (Settlement Due Activity wajib → memicu Apply Payment). Payoff statement untuk informasi customer, di-simulate via SIMULATION.RUNNER dengan activity LENDING-CALCULATE-PAYOFF dan activity date = payoff date. Prepayment charge bisa activity charge atau periodic rule charge. Bills dibuat untuk pembayaran reguler & break-rule charges; statement termasuk saldo current yang belum due; credit UNC otomatis menyetel dues.'},
+{k:'settlement property class direct debit dd mandate ddi payment type apply payment',a:'SETTLEMENT (CCY, DATED): Settlement method hanya DD (Direct Debit). Mandate reference = record DD.DDI (status AVAILABLE), diupdate via LENDING-UPDATE-SETTLEMENT; akun harus currency lokal. DD transaction code harus dipetakan ke activity via ACTIVITY.MAPPING. Remainder activity PAYMENT.RULES harus LENDING-CREDIT-ARRANGEMENT. Payment type: ACTUAL, CONSTANT, LINEAR, CHARGE. Issue Bill activity memicu pembuatan DD.ITEM. Bisa satu mandate untuk charge dan satu untuk principal/interest.'},
+{k:'closure property class maturity balance automatic manual period posting restrict',a:'CLOSURE (DATED, TRACKING): Closure Type MATURITY (sesuai maturity date) atau BALANCE (saat semua saldo nol). Method Automatic/Manual. Closure Period = kapan activity CLOSURE diproses untuk closure otomatis. Posting Restrict = kode penutupan akun.'},
+{k:'aa.product.line product group product designer build banking products rebuild activities inheritance parent proof publish',a:'Membangun produk AA: AA.PRODUCT.LINE (definisi business line oleh Temenos; untuk Lending LINE.ATTRIBUTE = CCY & REPLAY; property class ditandai mandatory/optional), AA.PRODUCT.GROUP (bentuk dasar produk; tiap mandatory property class wajib ada minimal satu property mandatory; internal vs external; REBUILD.ACTIVITIES = YES untuk auto-generate activities saat property ditambahkan), AA.PRODUCT.DESIGNER (produk dari product group; semua property mandatory + optional; product condition per property; currency multi-value; produk inheritance-only non-saleable sebagai parent; PARENT.PRODUCT untuk child). Calculation source (tab CALCULATION.SOURCE): calculated property + source balance + source type, mis. PRINCIPALINT dari DR.DAILY CURACCOUNT.'},
+{k:'proofing publishing product catalog available date expiry date design errors suggestions',a:'Pembuatan produk 3 tahap: Designing → Proofing → Publishing. Design tidak berpengaruh ke produk live. Proof memeriksa error desain (terutama hierarki); Publish menempatkan produk di Product Catalog; keduanya memproses dari parent ke semua children. Available Date = tanggal mulai berlaku (sistem mencari kondisi valid mulai tanggal itu). Expiry Date = produk berhenti ada untuk arrangement BARU; arrangement lama tetap jalan. Jika proofing gagal, error ditampilkan beserta saran perbaikan.'},
+{k:'reverse and replay effective dated processing noreverse noreplay back valued commitment example',a:'Reverse & Replay: mengubah/membalik activity dari tanggal berapa pun sejak kontrak dimulai; LINE.ATTRIBUTE Product Line harus punya opsi REPLAY. Reversal tidak bisa bila AA.ACTIVITY.CLASS type NOREVERSE; replay tidak bisa bila NOREPLAY. Proses: membalik semua activity terkait dari hari ini mundur ke tanggal back-valued, lalu memutar ulang dari tanggal itu ke hari ini; accounting entries dibuat untuk keduanya; history kondisi harus lengkap. Contoh: 1 Jan commitment 500T → 31 Jan +50T → 15 Feb −100T = 450T; back-valued +150T tgl 15 Jan → reverse dua transaksi terakhir → replay → posisi 600T.'},
+{k:'simulation overview replicates real time sim files execute convert live arrangement runner service',a:'Simulation mereplikasi skenario nyata untuk arrangement baru/eksisting: efek perubahan principal, rate, tenor, charge, payoff amount. Melakukan update seperti activity sungguhan tapi menyimpan data di simulated files (SIM); tidak membuat/mengubah arrangement live; memeriksa kondisi & negotiation rules, menghitung maturity, charges, repayment, menyiapkan schedule. Bisa multiple simulation per arrangement, beberapa activity dalam satu run, periode dengan start/end date, data disimpan sementara. Bisa dikonversi jadi live (Execute). Sub-sistem: data capture, simulation runner, simulation service (TSA.SERVICE agent BNK/AA.SIMULATION.SERVICE + TSM).'},
+{k:'balances arrangement ac.balance.type balance prefix cur acc due age unc und sp balance name accounting',a:'Balance AA: property tertentu punya balance; balance type = komponen finansial produk. Nama balance = Balance Prefix + Property + [SP]: mis. ACC + PRINCIPALINT = ACCPRINCIPALINT. Prefix: CUR (current — TERM.AMOUNT/ACCOUNT), ACC (accrued — INTEREST/CHARGE), DUE (due — ACCOUNT/INTEREST/CHARGE), AGE (overdue), UNC (unallocated credit), UND (unallocated debit); suffix SP = suspend/non-accrual. AC.BALANCE.TYPE menambah balance type: Reporting Type Contingent / Non-contingent / Internal; virtual (penjumlahan balance untuk kalkulasi); Activity Update (dated history file ACCT.ACTIVITY); Suspend Balance. Balance dipakai untuk reporting, basis kalkulasi interest/charge, dan periodic restriction.'},
+{k:'suspension arrangement suspend non accrual basis pl suspense sp resume interest charged bill',a:'Suspension: arrangement tetap diproses dari sisi customer (amount tetap due, interest capitalised) tapi bank tidak booking P&L; accrual dibukukan ke suspense balance ber-suffix SP (mis. ACCLOANINTSP). Property harus punya PROPERTY.TYPE SUSPEND (hanya INTEREST & CHARGE); SUSPEND.OVERDUES hanya jika SUSPEND — membalik overdue yang sudah ke P&L dan menahan posting berikutnya; saat repayment, P&L direalisasikan otomatis. Suspension dipicu otomatis oleh aging atau manual. Resume = kebalikannya (manual): menyetel accrual suspend ke P&L, memindahkan charge income ke P&L.'},
+{k:'accounting property class rules allocation rule posting detail rules based accounting event event.type mvmt target transaction codes',a:'ACCOUNTING (DATED, MERGE, TRACKING.ONLY; tidak terlihat di arrangement): rules per property — ACCT.ACTION (action dengan ACCOUNTING=Yes di AA.PROPERTY.CLASS.ACTION), ACCT.RULE (valid di AC.ALLOCATION.RULE), PROPERTY. Amortisasi: ACCRUE.AMORT=AMORT, ACCRUE.PERIOD=MATURITY/1M/1Y. Rules Based Accounting: aplikasi menghasilkan accounting EVENT (contract id, balance type, amount, value date); Allocation Rule menentukan Target Balance, Contra Balance, Transaction Codes, Movement Detail → Posting Entries (STMT/CATEG/SPEC) via AC.POSTING.DETAIL. Saran: copy allocation rule DEBIT-CHARGE untuk property interest/charge baru, ganti P&L category.'},
+{k:'accounting data files eb.contract.balances acct.activity stmt.entry categ.entry spec.entry consolidation',a:'Data accounting AA: EB.CONTRACT.BALANCES = saldo arrangement per AA Account; ACCOUNT/ACCT.ACTIVITY = saldo historis & movement per value date; STMT.ENTRY (Account No = Arr A/c, multi balance type), CATEG.ENTRY (P&L movement), SPEC.ENTRY (CRF, Deal No = Arr A/c). Consolidation: CONSOL key dari Term/Maturity date & field AA.ACCOUNT.DETAILS; Principal asset type = balance type (CURACCOUNT vs LIVEDB di LD; CURCOMMITMENT vs LIVECMT); accrued interest memakai balance type (mis. ACCLOANINT) bukan asset type 51000.'},
+{k:'enquiries arrangement balance activity log bills payment schedule messages drill down',a:'Enquiry bawaan dalam record Arrangement: Balance (commitment, current/due principal, pending charges, unallocated credit/debit), Activity Log (semua activity per tanggal & sequence, drill down ke Arrangement Activity; basis reverse & replay), Bills (due date, activity type, amount, outstanding, status due/settled, drill down), Messages, Payment Schedule (scheduled date, amount, outstanding principal, interest, total).'},
+{k:'activities overview arrangement activity class disburse apply payment accrue create arrangement online cob',a:'Activities = operasi yang diterapkan ke Arrangement (mis. Disburse, Apply Payment, Accrue Interest). Arrangement hanya bisa diubah via Activity (online maupun COB); membuat arrangement baru pun adalah activity. Activities dikelompokkan ke Activity Class (didefinisikan Temenos; menentukan perilaku, termasuk NOREVERSE/NOREPLAY). Activity di-generate otomatis saat property pertama dipakai di Product Line dengan REBUILD.ACTIVITIES=YES di AA.PRODUCT.GROUP.'},
+{k:'financial activities teller funds transfer disbursement repayment payoff account applications transaction code',a:'Pembayaran masuk/keluar akun AA dilakukan lewat aplikasi account-related: Funds Transfer, Teller, dsb. Activity dipilih otomatis berdasar Transaction Code (via ACTIVITY.MAPPING). Contoh activity: Disburse, Apply Repayment, Payoff Loan.'},
+{k:'aa loan lending property classes list overview mapping rules schedule restriction charge presentation messaging api',a:'Property Classes untuk Lending Product Line: CUSTOMER, ACCOUNT, LIMIT, OFFICERS, TERM.AMOUNT, ACTIVITY.MAPPING, INTEREST, PAYMENT.RULES, CHARGE, ACCOUNTING, PAYMENT.SCHEDULE, ACTIVITY.RESTRICTION, BALANCE (Overdue), OVERDUE, MAINTENANCE (Balance Maintenance), CHANGE.PRODUCT, SETTLEMENT, PAYOFF, CLOSURE, PRESENTATION, MESSAGING, API, ACTIVITY.CHARGES, PERIODIC.CHARGES, CHARGE.OVERRIDE.'},
+{k:'quiz answers true false primary customer changed joint owner account category any term amount two attributes roles aa.customer',a:'Jawaban Quiz 1: (1) Account Property tidak memegang currency account — False (Account Property memegang currency; tidak bisa diubah setelah authorisation). (2) Primary Customer bisa diganti dengan Joint Owner — False (primary owner tidak bisa diubah setelah authorisation). (3) AA Account boleh pakai category code apa pun — False (harus Customer-type 1000–9999 non-contingent, bukan range Nostro/Vostro). (4) TERM.AMOUNT memegang dua atribut amount — False (committed amount & term/maturity). (5) Roles other parties didefinisikan di AA.CUSTOMER — False (di AA.PARTY.ROLE).'},
+{k:'quiz answers activity mapping periodic reset calculation threshold negative interest',a:'Jawaban Quiz 2: (1) Activity Mapping menghubungkan aplikasi eksternal dengan activity arrangement saat debit/kredit — True. (2) Periodic Reset untuk Interest tidak diizinkan di AA — False (diizinkan, terjadwal atau manual, bisa memicu recalculation). (4) Calculation Threshold = minimum interest amount — False (maximum debit balance yang tidak dihitung bunganya). (5) AA mendukung negative interest — True (bisa di-set user atau karena negative spread tinggi).'},
+{k:'quiz answers payment schedule constant linear repayment',a:'Jawaban Quiz 3: (1) Yang TIDAK bisa didefinisikan di Payment Schedule Product Condition: c) menggabungkan bill yang jatuh tempo pada tanggal BERBEDA (hanya same date). (2) Constant repayment: c) jumlah principal & interest konstan sepanjang waktu (annuity). (3) Linear repayment: a) payment tetap, dan c/d: principal repayment konstan (interest menurun) — jawaban dokumen: payment fixed & principal konstan; interest menurun.'},
+{k:'quiz answers match activity charge scheduled break rule charge property class',a:'Jawaban Quiz 4 (match): 1.Activity Charge — b) LENDING-NEW-ARRANGEMENT; 2.Scheduled Charge — c) Payment Schedule; 3.Break Rule Charge — e) Periodic Rules; 4.Charge Property Class — d) Currency dependent optional; 5.Activity Charge Property Class — a) Not currency dependent.'},
+{k:'quiz answers simulation payoff payment types dd allowed',a:'Jawaban Quiz 7: (1) Simulation di AA = b) proses mereplikasi skenario nyata. (2) = c) melakukan activity sungguhan tapi tidak membuat/mengubah record live. (3) Payment types untuk DD = c) ACTUAL, CONSTANT dan LINEAR.'},
+{k:'quiz answers activities auto generated rebuild activities negotiation fix value custom tracking currency product designer',a:'Jawaban Quiz 6: (1) Activities ter-generate otomatis saat: b) property dipakai pertama kali di product line dengan REBUILD.ACTIVITIES=YES di AA.PRODUCT.GROUP. (2) Yang bukan activity: c) Enquiry. (3) FIX.VALUE dengan Arrangement Link CUSTOM.TRACKING: c) tidak bisa dinegosiasikan tapi akan ditrack. (4) Currency di AA.PRODUCT.DESIGNER: c) allowed currencies diinput di multi-value CURRENCY field.'},
+{k:'quiz answers balances aged nab virtual suspend prefixes accounting property class',a:'Jawaban Quiz 8: (1) Semua bill otomatis di-age ke NAB — False (hanya bila AGE.ALL.BILLS=YES). (2) Virtual balance = penjumlahan balance terpilih — True. (3) SUSPEND activity membalik overdue yang sudah posting ke P&L — True (itu SUSPEND.OVERDUES; jawaban dokumen True). (4) Suspension bisa diminta manual — True. (5) Balance prefixes ditunjukkan di ACCOUNTING Property Class — False (di masing-masing property class via field BALANCE.PREFIX).'},
+{k:'quiz answers soft accounting contingent commitment historic balances memo consolidation',a:'Jawaban Quiz 9: (1) Yang tidak benar soal soft accounting: b) semua action menghasilkan accounting event. (2) Balance untuk commitment amount: a) Contingent. (3) Historic balances & movements: d) di ACCT.ACTIVITY. (4) Memo balance yang salah: d) dipakai untuk kalkulasi interest — memo tidak untuk kalkulasi; virtual yang bisa. (5) Konsolidasi balance AA: b) pada user defined balance types.'},
+{k:'quiz answers periodic attribute transaction maximum term amount product change automated',a:'Jawaban Quiz 5: (1) TRANSACTION.AMOUNT.MAXIMUM untuk membatasi Term Amount — False (untuk transaction amount activity). (2) Periodic Attribute Classes terhubung ke Properties — True. (3) Product Change bisa otomatis — True (scheduled: CHANGE.DATE/CHANGE.PERIOD). (4) Periodic Attribute Class bukan Property Class — True (ia adalah class terpisah untuk periodic rules).'},
+{k:'workshops practice product builder admin menu property classes properties conditions',a:'Jalur menu latihan: Admin Menu > Product Builder > Property Classes and Properties / Product Conditions / Periodic Attributes / Products / Accounting / Activities. Untuk operasional: User Menu > Credit Operations > Retail Lending – Arrangements (Product Catalog, New Arrangement Offers, Authorised, Arrangement Activities (FT) > AA Disbursement / AA Repayment). Command line: TSA.SERVICE (BNK/AA.SIMULATION.SERVICE, TSM), EB.CONTRACT.BALANCES, ACCT.BALANCE.ACTIVITY.'}
+];
+
+const QUIZ = [
+ {q:'Account Property tidak memegang currency dari Account.',o:['True','False'],a:1,e:'Account Property memegang currency Arrangement — default dari New Arrangement Activity dan tidak bisa diubah setelah authorisation.'},
+ {q:'Primary Customer dari sebuah Arrangement dapat diganti dengan Joint Owner.',o:['True','False'],a:1,e:'Setelah Arrangement di-authorise, Primary Owner tidak dapat diubah. Other owners hanya bisa ditambahkan.'},
+ {q:'AA Account dapat memakai sembarang Account Category Code.',o:['True','False'],a:1,e:'Harus Customer-type range 1000–9999, Non-contingent, dan menghindari range Nostro/Vostro.'},
+ {q:'Term Amount Property Class memegang dua atribut Amount.',o:['True','False'],a:1,e:'Term Amount memegang Committed Amount dan Term (repayment term / maturity date), bukan dua atribut amount.'},
+ {q:'Roles dari Other Parties (CUSTOMER) didefinisikan di virtual table AA.CUSTOMER.',o:['True','False'],a:1,e:'Roles Other Party (Guarantor, Co-signatory) didefinisikan di AA.PARTY.ROLE.'},
+ {q:'Activity Mapping Property menyediakan link antara aplikasi eksternal dan arrangement activities saat debit/kredit ke akun arrangement.',o:['True','False'],a:0,e:'Benar — Transaction Code dari FT/Teller/Cash Pooling dipetakan ke AA Activity melalui Activity Mapping.'},
+ {q:'Periodic Reset untuk Interest tidak diizinkan di AA.',o:['True','False'],a:1,e:'Periodic Interest dapat direset pada frekuensi tertentu (terjadwal atau manual), dan dapat memicu recalculation.'},
+ {q:'Calculation Threshold untuk Interest menentukan minimum interest amount sebuah arrangement.',o:['True','False'],a:1,e:'Calculation Threshold = maximum debit balance yang tidak dihitung bunganya.'},
+ {q:'AA mendukung negative interest.',o:['True','False'],a:0,e:'User dapat menetapkan negative interest, atau muncul dari negative spread tinggi; jika tidak diizinkan, bunga nol saat rate < 0.'},
+ {q:'Apa yang TIDAK dapat didefinisikan dalam Payment Schedule Product Condition?',o:['Properties yang dimasukkan Schedule','Payment Frequency','Menggabungkan bill yang jatuh tempo pada tanggal berbeda','Payment Frequency sekaligus Due Frequency'],a:2,e:'Bill hanya bisa digabung bila jatuh tempo pada tanggal yang SAMA.'},
+ {q:'Manakah yang benar tentang tipe repayment Constant?',o:['Payment amount reguler dan tetap','Interest repayment meningkat','Principal dan interest jumlahnya konstan','Interest variabel, principal konstan'],a:2,e:'Constant (annuity): total angsuran principal + interest konstan sepanjang periode; butuh Term Amount + Interest property.'},
+ {q:'Manakah fitur tipe repayment Linear?',o:['Payment tetap sepanjang periode','Interest meningkat','Principal repayment meningkat','Principal repayment konstan sepanjang periode'],a:0,e:'Linear: pembayaran tetap (principal konstan, interest menurun seiring saldo turun); membutuhkan term amount property.'},
+ {q:'TRANSACTION.AMOUNT.MAXIMUM Periodic Attribute Class dapat dipakai untuk membatasi Term Amount.',o:['True','False'],a:1,e:'Ia membatasi maximum transaction amount sebuah activity (mis. disbursement), bukan Term Amount.'},
+ {q:'Periodic Attribute Classes terhubung ke Properties.',o:['True','False'],a:0,e:'Periodic Attribute Class dikaitkan ke Property Class (INTEREST, TERM.AMOUNT, ACTIVITY.RESTRICTION, CHARGE, PAY.OFF) dan dipakai dalam product condition.'},
+ {q:'Product Change dari sebuah Arrangement dapat diotomatisasi.',o:['True','False'],a:0,e:'Scheduled switch via CHANGE.DATE atau CHANGE.PERIOD (otomatis atau manual).'},
+ {q:'Periodic Attribute Class bukanlah Property Class.',o:['True','False'],a:0,e:'Benar — ia adalah class terpisah (AA.PERIODIC.ATTRIBUTE.CLASS) untuk periodic rules.'},
+ {q:'Apa yang dimaksud Simulation di AA?',o:['Proses repayment pinjaman AA','Proses mereplikasi skenario nyata','Proses menutup Arrangement','Proses membuat Arrangement'],a:1,e:'Simulation mereplikasi skenario nyata (perubahan principal, rate, tenor, payoff) tanpa mengubah record live; data disimpan di SIM files.'},
+ {q:'Manakah yang benar tentang Simulation di AA?',o:['Melakukan activity nyata dan update record live','Record simulasi tidak bisa dieksekusi jadi live','Melakukan activity nyata tapi tidak update/membuat record live','Simulasi hanya untuk arrangement eksisting'],a:2,e:'Simulation menjalankan pemrosesan seperti nyata tetapi menyimpan di simulated files; bisa dikonversi ke live melalui Execute.'},
+ {q:'Apa saja AA.PAYMENT.TYPES yang diizinkan untuk DD (Direct Debit)?',o:['CONSTANT, User Defined, LINEAR','ACTUAL, CONSTANT, User Defined','ACTUAL, CONSTANT, LINEAR','ACTUAL, User Defined, LINEAR'],a:2,e:'Untuk settlement Direct Debit: ACTUAL, CONSTANT dan LINEAR (plus CHARGE).'},
+ {q:'Bagaimana activities di-generate otomatis?',o:['Saat property pertama dipakai di Product Line','Saat property pertama dipakai dengan REBUILD.ACTIVITIES=YES di AA.PRODUCT.GROUP','Saat Product Group baru dibuat','Saat property baru dipakai di AA.PRODUCT.DESIGNER'],a:1,e:'REBUILD.ACTIVITIES harus YES di AA.PRODUCT.GROUP ketika property ditambahkan.'},
+ {q:'Manakah yang BUKAN activity dalam sebuah Arrangement?',o:['Menaikkan commitment amount','Interest accrual','Enquiry','Mengkredit Arrangement'],a:2,e:'Enquiry bukan activity — hanya menampilkan data; arrangement hanya diubah via activity.'},
+ {q:'Negotiation rule sebuah atribut adalah FIX.VALUE. Apa dampaknya bila Arrangement Link di-set CUSTOM.TRACKING?',o:['Akan track nilai atribut apa pun negotiation rule-nya','Tidak akan track nilai atribut','FIX.VALUE tidak bisa dinegosiasikan tapi akan ditrack','CUSTOM.TRACKING tidak mengizinkan negosiasi'],a:2,e:'Nilai tetap (fix value) tidak dinegosiasikan, namun tetap ditrack pada level arrangement.'},
+ {q:'Bagaimana cara menetapkan currency yang diizinkan di AA.PRODUCT.DESIGNER?',o:["Opsi 'ALL' di field CURRENCY","Currency terlarang disebutkan, sisanya diizinkan",'Currency diizinkan diinput di multi-value CURRENCY field','Produk hanya bisa local currency'],a:2,e:'Allowed currencies diinput di multi-value field CURRENCY; kondisi product per currency harus tersedia.'},
+ {q:'Semua bill otomatis di-age ke status NAB saat satu bill di-age ke NAB.',o:['True','False'],a:1,e:'Hanya bila field AGE.ALL.BILLS = YES pada status tersebut (efeknya seluruh loan ikut menua).'},
+ {q:'Virtual Balance adalah penjumlahan balance terpilih.',o:['True','False'],a:0,e:'Benar — balance buatan bank berupa penjumlahan balance type untuk keperluan kalkulasi, mis. penalty interest dari semua overdue balance.'},
+ {q:'SUSPEND activity membalikkan overdues yang sudah diposting ke P&L.',o:['True','False'],a:0,e:'SUSPEND.OVERDUES membalik posting P&L overdue dan menahan posting berikutnya; accrual lanjut ke balance SP.'},
+ {q:'Suspension dapat diminta secara manual.',o:['True','False'],a:0,e:'Dipicu otomatis oleh proses aging, atau diminta manual; Resume selalu manual.'},
+ {q:'Balance Prefixes ditunjukkan di ACCOUNTING Property Class.',o:['True','False'],a:1,e:'Balance prefix ditetapkan di masing-masing Property Class via field BALANCE.PREFIX (CUR, ACC, DUE, AGE, UNC, UND).'},
+ {q:'Manakah yang TIDAK benar tentang Soft Accounting?',o:['Balance dapat didefinisikan user','Semua action menghasilkan accounting event','Satu action dapat menghasilkan beberapa accounting event','EB.CONTRACT.BALANCES menahan saldo Arrangement per AA Account'],a:1,e:'Tidak semua action menghasilkan accounting event — ditandai di AA.PROPERTY.CLASS.ACTION.'},
+ {q:'Tipe balance apa yang dihasilkan untuk commitment amount?',o:['Contingent','Non Contingent','Virtual','Virtual dengan reporting'],a:0,e:'Commitment adalah item off-balance-sheet → contingent (balance CURCOMMIT + contingent balancing CURCOMMITBL).'},
+ {q:'Di mana Historic Balances dan Balance Movements disimpan?',o:['Di Arrangements','Di EB.CONTRACT.BALANCES','Di SPEC.ENTRIES','Di ACCT.ACTIVITY'],a:3,e:'ACCT.ACTIVITY menyimpan saldo historis & movement per value date.'},
+ {q:'Manakah yang SALAH tentang Memo type balance?',o:['Dipakai untuk pelaporan lokal','Dipakai untuk pelaporan finansial','Untuk menahan balance','Dipakai untuk kalkulasi interest'],a:3,e:'Memo untuk reporting; untuk kalkulasi dipakai Virtual balance.'},
+ {q:'Manakah yang benar tentang konsolidasi AA Balances?',o:['Pada hard coded asset type dan user defined balance type','Pada user defined balance type','Pada hard coded asset type'],a:1,e:'Konsolidasi AA memakai user defined balance types (asset type = balance type, mis. CURACCOUNT, ACCLOANINT).'},
+ {q:'Match: Activity Charge — ?',o:['Not currency dependent','LENDING-NEW-ARRANGEMENT','Payment Schedule','Currency dependent optional','Periodic Rules'],a:1,e:'Activity Charge terkait activity seperti LENDING-NEW-ARRANGEMENT; Scheduled Charge → Payment Schedule; Break Rule Charge → Periodic Rules; Charge class → OPT.CCY; Activity Charge class → tidak currency dependent.'},
+ {q:'Match: Break Rule Charge — ?',o:['Periodic Rules','Payment Schedule','LENDING-NEW-ARRANGEMENT','Not currency dependent','Currency dependent optional'],a:0,e:'Break rule charge didefinisikan di tab Periodic Rules (mis. batas disbursement per tahun).'},
+ {q:'Match: Scheduled Charge — ?',o:['Currency dependent optional','Payment Schedule','Periodic Rules','LENDING-NEW-ARRANGEMENT','Not currency dependent'],a:1,e:'Scheduled charge (mis. annual fee) terdefinisi lewat Payment Schedule yang menempel di produk.'},
+ {q:'Match: Charge Property Class — ?',o:['Payment Schedule','Currency dependent optional','Periodic Rules','LENDING-NEW-ARRANGEMENT','Not currency dependent'],a:1,e:'CHARGE Property Class bertipe OPT.CCY — currency optional/dependent.'},
+ {q:'Match: Activity Charge Property Class — ?',o:['LENDING-NEW-ARRANGEMENT','Not currency dependent','Payment Schedule','Periodic Rules','Currency dependent optional'],a:1,e:'ACTIVITY.CHARGES tidak bergantung currency.'}
+];
+
+const GLOSSARY = [
+['Arrangement','Kontrak/perjanjian antara bank dan customer dalam AA (mis. pinjaman). Dibuat melalui activity; semua perubahan juga lewat activity.'],
+['AA (Arrangement Architecture)','Arsitektur berbasis komponen di T24 untuk membangun produk perbankan dari Property Class yang reusable.'],
+['Property Class','Kategori komponen (mis. INTEREST, CHARGE) yang menentukan atribut, action, dan tipe balance. Dirilis Temenos.'],
+['Property','Named instance dari Property Class (mis. PRINCIPALINT), dibuat saat implementasi, ditempel ke Product Group.'],
+['Product Condition','Kondisi/nilai default property di level produk (tabel AA.PRD.DES.<Property Class>); Id memuat currency & effective date.'],
+['Negotiable','Atribut yang boleh diubah di level Arrangement, dikontrol DEFAULT.NEGOTIABLE dan NR.* fields (range, fix value, error/override).'],
+['Commitment Amount','Jumlah yang dijanjikan/dilimpahkan (plafon) pinjaman; balance CURCOMMIT.'],
+['Revolving','Pemulihan available commitment saat repayment: No / Payment / Prepayment.'],
+['Balance Prefix','CUR (current), ACC (accrued), DUE (jatuh tempo), AGE (overdue), UNC (unallocated credit), UND (unallocated debit), SP (suspend).'],
+['Balance Type','Komponen finansial produk; Contingent / Non-contingent / Internal / Virtual; didefinisikan/extend di AC.BALANCE.TYPE.'],
+['Bill','Make Due activity — pemberitahuan pembayaran (principal, interest, charge); dasar overdue & delinquency.'],
+['Billed Balance','Saldo yang telah dibuatkan bill (DUE/AGE) — lawan current balance (CUR).'],
+['Overdue / Ageing','Perpindahan status bill setelah lewat due date: Grace, Delinquent, Non Accrual Basis (NAB), dll.'],
+['Non Accrual Basis (NAB)','Status saat P&L tidak lagi dibukukan; accrual ke balance suspense ber-suffix SP.'],
+['Suspension','Menghentikan booking P&L arrangement; accrual interest/charge ke balance SP; bisa memicu otomatis dari aging atau manual.'],
+['Activity','Operasi pada arrangement (disburse, apply payment, accrue, dll.); dikelompokkan dalam Activity Class.'],
+['Activity Mapping','Pemetaan Transaction Code (FT/Teller/Cash Pool) ke activity AA.'],
+['Payment Rules','Aturan alokasi dana pembayaran: by bill property / bill date / current; urutan oldest first/last; remainder activity.'],
+['Remainder Activity','Menangani kelebihan pembayaran — biasanya LENDING-CREDIT-ARRANGEMENT ke credit balance.'],
+['Credit Balance (UNC)','Saldo kredit dalam pinjaman (overpaid / paid in advance) yang otomatis dipakai saat bill due.'],
+['Payoff','Pelunasan penuh; disimulasikan via LENDING-CALCULATE-PAYOFF; menghasilkan payoff statement & bill dengan expiry.'],
+['Simulation','Replikasi skenario tanpa menyentuh record live; data di SIM files; bisa di-Execute menjadi live.'],
+['Reverse & Replay','Pembalikan activity back-valued lalu diputar ulang sampai hari ini; butuh opsi REPLAY di Product Line.'],
+['Rollover / Reset / Change Product','Activity renewal: rollover (lanjut dgn kondisi tracking), reset (kondisi dari produk), change product (pindah produk baru).'],
+['Periodic Rule','Rule per periode (LIFE/INITIAL/REPEATING/ROLLING) via Periodic Attribute; mis. max/min rate, tolerance perubahan, batasan activity.'],
+['Proofing & Publishing','Validasi desain produk (proof) lalu publikasi ke Product Catalog; Available Date & Expiry Date.'],
+['Allocation Rule (AC.ALLOCATION.RULE)','Rule yang mengubah accounting event menjadi posting entries (target/contra balance, transaction codes, movement detail).'],
+['Rules Based Accounting','Accounting generik berbasis event (bukan logic detail di aplikasi) — hanya dipakai AA saat ini.'],
+['TSA.SERVICE / TSM','Agent service untuk menjalankan simulation service (BNK/AA.SIMULATION.SERVICE).'],
+['Product Line / Product Group / Product','Hierarki: line (LENDING) → group (basic shape) → product (AA.PRODUCT.DESIGNER) → arrangement.'],
+['DD.DDI','Mandate Direct Debit untuk settlement; status AVAILABLE; di-update via LENDING-UPDATE-SETTLEMENT.'],
+['Take-over / Balance Maintenance','Migrasi kontrak legacy ke AA: capture bill/balance, adjust, write-off.']
+];
+
+/* ====== VIEWS ====== */
+const views = {};
+
+views.home = ()=>`
+<div class="p-8 max-w-4xl mx-auto">
+  <div class="rounded-2xl bg-gradient-to-br from-blue-900 to-indigo-700 text-white p-8 mb-6">
+    <div class="text-xs uppercase tracking-widest text-blue-200 mb-2">Temenos T24 · Arrangement Architecture</div>
+    <h1 class="text-3xl font-extrabold mb-2">Knowledge Management — AA Loans</h1>
+    <p class="text-blue-100 text-sm leading-relaxed">Belajar mandiri produk AA Loan berdasarkan materi pelatihan resmi Temenos (441 slide, R10.3): konsep dasar, Property Class, pembangunan produk, aktivitas, balance &amp; accounting — lengkap dengan quiz, simulator, dan chatbot.</p>
+    <div class="flex gap-3 mt-5 flex-wrap">
+      <button onclick="go('konsep')" class="bg-white text-blue-900 font-semibold text-sm px-4 py-2 rounded-lg hover:bg-blue-50">Mulai Belajar →</button>
+      <button onclick="go('chatbot')" class="bg-blue-800/60 border border-blue-400/40 font-semibold text-sm px-4 py-2 rounded-lg hover:bg-blue-800">💬 Tanya Chatbot</button>
+      <button onclick="go('quiz')" class="bg-blue-800/60 border border-blue-400/40 font-semibold text-sm px-4 py-2 rounded-lg hover:bg-blue-800">🧠 Uji Pemahaman</button>
+    </div>
+  </div>
+  <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+    ${[['konsep','1. Konsep Dasar','Dependensi AA, overview loan, interest & currency'],
+       ['propclass','2. Property Classes','25 komponen lending — klik untuk detail & workshop'],
+       ['product','3. Bangun Produk','Product Line → Group → Designer, Proof & Publish'],
+       ['activities','4. Aktivitas','Disbursement, Payment, Simulation, Reverse & Replay'],
+       ['balance','5. Balance & Accounting','Balance type, suspension, allocation rules'],
+       ['sim','Kalkulator','Simulasi angsuran annuity/linear sendiri']].map(([s,t,d])=>`
+      <button onclick="go('${s}')" class="bg-white rounded-xl border border-slate-200 p-5 text-left hover:border-blue-400 hover:shadow transition">
+        <div class="font-bold text-blue-900">${t}</div>
+        <div class="text-xs text-slate-500 mt-1">${d}</div>
+      </button>`).join('')}
+  </div>
+</div>`;
+
+/*PCVIEW*/
+views.propclass = ()=>{
+  return `
+  <div class="p-6 max-w-6xl mx-auto">
+    <h1 class="text-2xl font-extrabold text-blue-900">Property Class Explorer — Lending</h1>
+    <p class="text-sm text-slate-500 mb-4">Klik kartu untuk membuka detail lengkap: tipe, balance prefix, penjelasan, dan petunjuk workshop dari dokumen.</p>
+    <input id="pcsearch" placeholder="Cari property class… (mis. interest, overdue)" class="w-full mb-5 px-4 py-2.5 rounded-xl border border-slate-200 text-sm" oninput="renderPcCards()">
+    <div id="pcgrid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3"></div>
+    <div id="pcdetail"></div>
+  </div>`;
+};
+views.propclass_after = ()=>{
+  renderPcCards();
+};
+function pcChip(p){
+  const mk = p.mandatory==='Wajib' ? 'bg-red-100 text-red-700' : 'bg-slate-100 text-slate-600';
+  return `<span class="chip ${mk}">${p.mandatory==='Wajib'?'MANDATORY':'opsional'}</span>`;
+}
+function renderPcCards(){
+  const q = (document.getElementById('pcsearch')?.value||'').toLowerCase();
+  const grid = document.getElementById('pcgrid'); if(!grid) return;
+  grid.innerHTML = PC.filter(p=>(p.id+p.name+p.klik).toLowerCase().includes(q)).map(p=>`
+    <button onclick="openPc('${p.id}')" class="bg-white rounded-xl border border-slate-200 p-4 text-left hover:border-blue-500 hover:shadow transition">
+      <div class="flex items-center justify-between mb-1">${pcChip(p)}</div>
+      <div class="font-bold text-sm text-blue-900 mono">${p.id}</div>
+      <div class="text-[11px] text-slate-500 leading-snug mt-1">${p.klik}</div>
+    </button>`).join('');
+}
+function openPc(id){
+  const p = PC.find(x=>x.id===id);
+  document.getElementById('pcdetail').innerHTML = `
+  <div class="fixed inset-0 bg-black/40 z-40 flex items-end sm:items-center justify-center p-0 sm:p-6" onclick="if(event.target===this)closePc()">
+    <div class="bg-white rounded-t-2xl sm:rounded-2xl w-full max-w-2xl max-h-[85vh] overflow-y-auto fade">
+      <div class="sticky top-0 bg-white border-b border-slate-200 p-5 flex items-start justify-between">
+        <div>
+          <div class="flex gap-2 items-center">${pcChip(p)}<span class="chip bg-blue-100 text-blue-700">${p.attr}</span></div>
+          <h2 class="text-xl font-extrabold text-blue-900 mono mt-2">${p.id}</h2>
+          <div class="text-sm text-slate-500">${p.klik}</div>
+        </div>
+        <button onclick="closePc()" class="text-slate-400 hover:text-slate-700 text-2xl leading-none">×</button>
+      </div>
+      <div class="p-5 space-y-4">
+        ${p.prefix!=='—'?`<div><div class="text-xs font-bold text-slate-400 uppercase mb-1">Balance Prefix</div><div class="mono text-sm bg-slate-50 inline-block px-3 py-1.5 rounded-lg">${p.prefix}</div></div>`:''}
+        <div><div class="text-xs font-bold text-slate-400 uppercase mb-2">Penjelasan Lengkap</div>
+        <ul class="space-y-2 text-sm leading-relaxed">${p.pts.map(x=>`<li class="flex gap-2"><span class="text-blue-500 mt-0.5">▸</span><span>${x}</span></li>`).join('')}</ul></div>
+        ${p.ws?`<div class="bg-amber-50 border-l-4 border-amber-400 p-4 rounded-r-lg text-sm"><span class="font-bold text-amber-800">Latihan (Workshop):</span><br>${p.ws}</div>`:''}
+        <div class="pt-2"><button onclick="askChat('${p.id}')" class="text-xs bg-blue-900 text-white px-3 py-2 rounded-lg font-semibold hover:bg-blue-800">Tanya chatbot tentang ${p.id} →</button></div>
+      </div>
+    </div>
+  </div>`;
+}
+function closePc(){document.getElementById('pcdetail').innerHTML='';}
+function askChat(id){go('chatbot');setTimeout(()=>sendChat('Jelaskan ' + id),80);}
+
+views.konsep = ()=>`
+<div class="p-6 max-w-4xl mx-auto space-y-6">
+  <h1 class="text-2xl font-extrabold text-blue-900">1 · Konsep Dasar AA</h1>
+  <div class="bg-white rounded-2xl border border-slate-200 p-6">
+    <h2 class="font-bold text-blue-900 mb-2">Apa itu AA?</h2>
+    <p class="text-sm leading-relaxed">AA (Arrangement Architecture) adalah cara T24 membangun produk perbankan dari <b>komponen yang reusable</b> (Property Class). Sebuah <b>Arrangement</b> (mis. pinjaman) adalah kontrak yang dibentuk dari sebuah <b>Product</b>, yang dibentuk dari <b>Product Group</b>, yang dibentuk dari <b>Product Line</b> (LENDING).</p>
+    <div class="mono text-xs bg-slate-50 p-4 rounded-xl mt-4 leading-relaxed">
+      PRODUCT LINE (LENDING) → PRODUCT GROUP → PRODUCT (AA.PRODUCT.DESIGNER) → ARRANGEMENT → ACTIVITIES → BALANCES / BILLS
+    </div>
+  </div>
+  <div class="bg-white rounded-2xl border border-slate-200 p-6">
+    <h2 class="font-bold text-blue-900 mb-2">AA Loan — Product Overview</h2>
+    <ul class="text-sm space-y-2">
+      <li>• <b>Arrangement Level</b>: Constant / Fixed / Floating; Periodic / Linear / Repayment; user-defined Band / Limit / Bullet; Mixed; Actual.</li>
+      <li>• <b>Arrangement Conditions</b> diturunkan dari Loan Product (product condition).</li>
+      <li>• <b>Disbursement</b>: Single atau Multiple, Negotiable atau Non-Negotiable.</li>
+      <li>• Loan dengan <b>Tracking</b> atau <b>Non-Tracking Account</b>; <b>Bills for payment</b>; konsep <b>Excess</b> &amp; <b>Under payment</b>.</li>
+    </ul>
+  </div>
+  <div class="bg-white rounded-2xl border border-slate-200 p-6">
+    <h2 class="font-bold text-blue-900 mb-2">Dependensi AA</h2>
+    <ul class="text-sm space-y-2">
+      <li>• <b>Core</b>: CUSTOMER, ACCOUNT, Delivery, Accounting, Limits + static tables lain.</li>
+      <li>• <b>Interest</b>: BASIC.RATE.TEXT (floating), BASIC.INTEREST (offer rate untuk AA Loans, generated daily, back-dated changes possible), PERIODIC.INTEREST.</li>
+      <li>• <b>Currency</b>: COUNTRY, REGION, HOLIDAY, CURRENCY.PARAM, CURRENCY, CURRENCY.MARKET. Negara/region di BUS.DAY.CENTRES → holiday dicek saat input arrangement. Currency di field CURRENCY pada AA.PRODUCT.DESIGNER.</li>
+    </ul>
+  </div>
+  <div class="bg-white rounded-2xl border border-slate-200 p-6">
+    <h2 class="font-bold text-blue-900 mb-3">Interest Day Basis (klik untuk memperbesar pemahaman)</h2>
+    <div class="overflow-x-auto"><table class="w-full text-sm mono">
+      <tr class="bg-slate-50 text-left"><th class="p-2">Key</th><th class="p-2">Numerator/Denominator</th><th class="p-2">Catatan</th></tr>
+      <tr><td class="p-2">A</td><td class="p-2">360/360</td><td class="p-2">—</td></tr>
+      <tr><td class="p-2">A1</td><td class="p-2">360/360</td><td class="p-2">30 hari tiap bulan</td></tr>
+      <tr><td class="p-2">A2</td><td class="p-2">360/360</td><td class="p-2">360 hari/tahun; bunga Feb dihitung hari terakhir</td></tr>
+      <tr><td class="p-2">B</td><td class="p-2">366/360</td><td class="p-2">—</td></tr>
+      <tr><td class="p-2">C</td><td class="p-2">366/366</td><td class="p-2">—</td></tr>
+      <tr><td class="p-2">D</td><td class="p-2">360/366</td><td class="p-2">—</td></tr>
+      <tr><td class="p-2">E</td><td class="p-2">366/365</td><td class="p-2">—</td></tr>
+      <tr><td class="p-2">F</td><td class="p-2">360/365</td><td class="p-2">bunga Feb dihitung hari kedua terakhir</td></tr>
+      <tr><td class="p-2">H</td><td class="p-2">30/356</td><td class="p-2">—</td></tr>
+      <tr><td class="p-2">S</td><td class="p-2">Special</td><td class="p-2">—</td></tr>
+    </table></div>
+  </div>
+  <div class="bg-white rounded-2xl border border-slate-200 p-6">
+    <h2 class="font-bold text-blue-900 mb-2">Objectives Modul (dari dokumen)</h2>
+    <ul class="text-sm space-y-1.5 text-slate-600">
+      <li>1. Mengenal Lending Product Line &amp; Property Classes</li>
+      <li>2. Set parameter tables, membuat Property &amp; Product Conditions</li>
+      <li>3. Membuat Product Group &amp; Product, proof &amp; publish</li>
+      <li>4. Lending activities, Simulation, Reverse &amp; Replay</li>
+      <li>5. Balance Types, move balances, suspending arrangements</li>
+      <li>6. Accounting flow di AA + enquiries</li>
+    </ul>
+  </div>
+</div>`;
+
+/*TABELV*/
+views.tabel = ()=>`
+<div class="p-6 max-w-4xl mx-auto space-y-6">
+  <h1 class="text-2xl font-extrabold text-blue-900">2 · Tabel &amp; Struktur Data</h1>
+  <div class="bg-white rounded-2xl border border-slate-200 p-6">
+    <h2 class="font-bold text-blue-900 mb-2">Tabel Komponen Reusable</h2>
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
+      <div class="bg-emerald-50 rounded-xl p-4"><div class="font-bold text-emerald-700 text-xs uppercase mb-2">Dirilis Temenos</div>
+        <ul class="mono text-xs space-y-1.5"><li>AA.PROPERTY.CLASS</li><li>AA.PERIODIC.ATTRIBUTE.CLASS</li><li>AA.PROPERTY.CLASS.ACTION</li><li>AA.ACTIVITY.CLASS</li></ul></div>
+      <div class="bg-amber-50 rounded-xl p-4"><div class="font-bold text-amber-700 text-xs uppercase mb-2">Setup Implementasi</div>
+        <ul class="mono text-xs space-y-1.5"><li>AA.PROPERTY</li><li>AA.PRD.DES.&lt;PROPERTY.CLASS&gt;</li><li>AA.PERIODIC.ATTRIBUTE</li><li>AA.SOURCE.CALC.TYPE</li></ul>
+        <div class="text-[11px] text-amber-700 mt-2">Bisa dipakai lintas beberapa produk.</div></div>
+    </div>
+  </div>
+  <div class="bg-white rounded-2xl border border-slate-200 p-6">
+    <h2 class="font-bold text-blue-900 mb-2">Tabel Pembangun Produk</h2>
+    <ul class="text-sm space-y-2 mono"><li>• AA.PRODUCT.LINE — business line (LENDING), LINE.ATTRIBUTE = CCY &amp; REPLAY</li><li>• AA.PRODUCT.GROUP — bentuk dasar produk; REBUILD.ACTIVITIES</li><li>• AA.PRODUCT.DESIGNER — desain produk, currency, calculation source</li></ul>
+  </div>
+  <div class="bg-white rounded-2xl border border-slate-200 p-6">
+    <h2 class="font-bold text-blue-900 mb-3">Hierarki &amp; Pola Id Product Condition</h2>
+    <details class="border rounded-xl p-4 bg-slate-50" open>
+      <summary class="font-semibold text-sm">AA.PROPERTY → Product Group → Product</summary>
+      <p class="text-sm mt-2 text-slate-600">Property adalah named instance dari Property Class; Multiple property sekelas boleh jika Property Class mengizinkan (MULTIPLE). Detail level produk tidak terlihat di arrangement bila PRODUCT.ONLY.</p>
+    </details>
+    <div class="mt-3 mono text-xs bg-slate-900 text-emerald-300 p-4 rounded-xl overflow-x-auto">
+Id contoh : FIXED.RATE-USD-20100101<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FIXED.INTEREST-GBP-20100101<br>Currency &amp; Effective Date adalah bagian dari Id kondisi.
+    </div>
+  </div>
+  <div class="bg-white rounded-2xl border border-slate-200 p-6">
+    <h2 class="font-bold text-blue-900 mb-2">Negotiation Rules (interaktif — cek pilihan)</h2>
+    <div class="space-y-3 text-sm" id="nrgame"></div>
+  </div>
+</div>`;
+views.tabel_after = ()=>{
+  const cases = [
+    {q:'DEFAULT.NEGOTIABLE = Yes, tanpa rule per atribut',ok:'Semua atribut bisa dinegosiasikan tanpa batas'},
+    {q:'NR.TYPE = RANGE, NR.VALUE 3–10 (usual term 5Y)',ok:'Boleh dinegosiasikan hanya antara 3–10 tahun'},
+    {q:'NR.TYPE = FIX.VALUE + NR.MESSAGE ERROR',ok:'Tidak boleh diubah sama sekali — tampil error'},
+    {q:'NR.TYPE = MAXIMUM + NR.MESSAGE OVERRIDE',ok:'Boleh lebih besar hanya dengan override'},
+    {q:'DEFAULT.ATTR.OPTION = RESETTING',ok:'Kondisi direset dari produk saat rollover/reset/change product'},
+    {q:'DEFAULT.ATTR.OPTION = NON-RESETTING',ok:'Kondisi dipertahankan dari level Arrangement'}
+  ];
+  document.getElementById('nrgame').innerHTML = cases.map((c,i)=>`
+   <div class="border border-slate-200 rounded-xl p-3">
+     <div class="font-medium">${c.q}</div>
+     <button id="nrbtn${i}" onclick="this.textContent='${c.ok}';this.className='mt-2 text-xs bg-emerald-100 text-emerald-700 px-3 py-1.5 rounded-lg font-semibold'" class="mt-2 text-xs bg-blue-100 text-blue-700 px-3 py-1.5 rounded-lg font-semibold">Klik untuk lihat perilaku</button>
+   </div>`).join('');
+};
+
+/*PRODUCTV*/
+views.product = ()=>`
+<div class="p-6 max-w-4xl mx-auto space-y-6">
+  <h1 class="text-2xl font-extrabold text-blue-900">4 · Membangun Produk Lending</h1>
+  ${[
+  ['AA.PRODUCT.LINE','High-level business line, dirilis Temenos (hanya deskripsi bisa diubah). Property class penyusun ditandai Mandatory/Optional. Untuk Lending: LINE.ATTRIBUTE = CCY dan REPLAY. Property class wajib punya minimal satu property di tiap product group & product.'],
+  ['AA.PRODUCT.GROUP','Product group dibentuk dari product line; memberi bentuk dasar produk. Minimal satu mandatory property per mandatory property class. Internal (produk bank sendiri) vs External (produk bank lain, untuk analisis perbandingan). Menambah property dengan REBUILD.ACTIVITIES=YES otomatis meng-generate activities.'],
+  ['AA.PRODUCT.DESIGNER','Produk dibangun dari product group: semua property mandatory + optional pilihan. Tiap property punya product condition (bisa lebih dari satu dengan periode efektif dalam Days/Weeks/Months/Years). Currency multi-value; kondisi currency harus tersedia. Produk inheritance-only (non-saleable, parent) tidak ikut proof/publish; child mewarisi via PARENT.PRODUCT. Tab CALCULATION.SOURCE: property kalkulasi + source balance/type, mis. PRINCIPALINT ← DR.DAILY CURACCOUNT.']
+  ].map(([t,d])=>`<div class="bg-white rounded-2xl border border-slate-200 p-6"><h2 class="font-bold text-blue-900 mono text-sm mb-2">${t}</h2><p class="text-sm leading-relaxed text-slate-700">${d}</p></div>`).join('')}
+  <div class="bg-white rounded-2xl border border-slate-200 p-6">
+    <h2 class="font-bold text-blue-900 mb-2">3 Tahap: Design → Proof → Publish</h2>
+    <div class="grid grid-cols-3 gap-3 text-center text-xs font-semibold mb-3">
+      <div class="bg-blue-50 p-3 rounded-xl">1. DESIGNING<br><span class="font-normal text-slate-500">tanpa efek ke live</span></div>
+      <div class="bg-indigo-50 p-3 rounded-xl">2. PROOFING<br><span class="font-normal text-slate-500">validasi error & hierarki</span></div>
+      <div class="bg-emerald-50 p-3 rounded-xl">3. PUBLISHING<br><span class="font-normal text-slate-500">masuk Product Catalog</span></div>
+    </div>
+    <ul class="text-sm space-y-2 text-slate-700">
+      <li>• Proof &amp; publish memproses dari parent ke seluruh children; kegagalan proof menampilkan error + saran perbaikan.</li>
+      <li>• <b>Available Date</b>: mulai tanggal ini sistem mencari kondisi valid semua property.</li>
+      <li>• <b>Expiry Date</b>: arrangement baru tidak boleh; arrangement lama tetap berjalan.</li>
+    </ul>
+  </div>
+  <div class="bg-white rounded-2xl border border-slate-200 p-6">
+    <h2 class="font-bold text-blue-900 mb-2">Jalur Menu Latihan (dari workshop dokumen)</h2>
+    <div class="mono text-xs bg-slate-900 text-blue-200 p-4 rounded-xl leading-relaxed overflow-x-auto">
+Admin Menu &gt; Product Builder &gt;<br>&nbsp;&nbsp;Property Classes and Properties / Product Conditions /<br>&nbsp;&nbsp;Periodic Attributes / Products / Accounting / Activities<br><br>User Menu &gt; Credit Operations &gt; Retail Lending – Arrangements &gt;<br>&nbsp;&nbsp;Product Catalog · New Arrangement Offers · Authorised ·<br>&nbsp;&nbsp;Arrangement Activities (FT) &gt; AA Disbursement / AA Repayment
+    </div>
+  </div>
+</div>`;
+
+/*ACTIVV*/
+views.activities = ()=>`
+<div class="p-6 max-w-4xl mx-auto space-y-6">
+  <h1 class="text-2xl font-extrabold text-blue-900">5 · Aktivitas, Simulasi, Reverse &amp; Replay</h1>
+  <div class="bg-white rounded-2xl border border-slate-200 p-6">
+    <h2 class="font-bold text-blue-900 mb-2">Activities</h2>
+    <ul class="text-sm space-y-2">
+      <li>• Operations yang diterapkan ke Arrangement: Disburse, Apply Payment, Accrue Interest, bahkan membuat Arrangement baru adalah activity.</li>
+      <li>• Arrangement <b>hanya</b> bisa diubah via Activity (online maupun End-of-Day/COB).</li>
+      <li>• Activities dikelompokkan ke <b>Activity Class</b> (didefinisikan Temenos, menentukan perilaku — termasuk NOREVERSE / NOREPLAY).</li>
+      <li>• Activity di-generate otomatis saat property dipakai pertama kali di product line dan REBUILD.ACTIVITIES = YES di product group.</li>
+      <li>• Financial activities lewat aplikasi akun (FT, Teller): activity dipilih berdasar Transaction Code → ACTIVITY.MAPPING.</li>
+    </ul>
+  </div>
+  <div class="bg-white rounded-2xl border border-slate-200 p-6">
+    <h2 class="font-bold text-blue-900 mb-2">Simulation</h2>
+    <ul class="text-sm space-y-2">
+      <li>• Mereplikasi skenario nyata: efek perubahan principal, interest rate, tenor, charges, atau payoff amount pada tanggal tertentu.</li>
+      <li>• Memproses seperti activity sungguhan tapi menyimpan data di <b>SIM files</b> — arrangement live tidak dibuat/diubah.</li>
+      <li>• Memeriksa kondisi &amp; negotiation rules, menghitung maturity/charges/repayment, menyiapkan schedule.</li>
+      <li>• Bisa multiple run, beberapa activity dalam satu run, periode start–end, retention tertentu; bisa <b>Execute</b> jadi live.</li>
+      <li>• Sub sistem: data capture · simulation runner · simulation service (agent TSA.SERVICE BNK/AA.SIMULATION.SERVICE + TSM).</li>
+    </ul>
+  </div>
+  <div class="bg-white rounded-2xl border border-slate-200 p-6">
+    <h2 class="font-bold text-blue-900 mb-2">Reverse &amp; Replay (Effective Dated Processing)</h2>
+    <p class="text-sm text-slate-700 mb-3">Meng-amend/membalik activity dari tanggal berapa pun sejak kontrak dimulai. Butuh opsi REPLAY di LINE.ATTRIBUTE. Tidak bisa reverse bila activity class NOREVERSE; tidak bisa replay bila NOREPLAY.</p>
+    <div class="text-xs font-semibold text-slate-500 mb-1">Contoh interaktif — posisi commitment:</div>
+    <div class="bg-slate-900 text-emerald-300 mono text-xs p-4 rounded-xl mb-3" id="rrbox">1 Jan: +500T = 500T | 31 Jan: +50T = 550T | 15 Feb: −100T = 450T</div>
+    <div class="flex gap-2 flex-wrap">
+      <button onclick="rrRun(0)" class="text-xs bg-blue-100 text-blue-700 px-3 py-2 rounded-lg font-semibold">Posisi normal (450T)</button>
+      <button onclick="rrRun(1)" class="text-xs bg-amber-100 text-amber-700 px-3 py-2 rounded-lg font-semibold">Reverse dua transaksi terakhir</button>
+      <button onclick="rrRun(2)" class="text-xs bg-emerald-100 text-emerald-700 px-3 py-2 rounded-lg font-semibold">Insert back-valued +150T (15 Jan) lalu replay → 600T</button>
+    </div>
+    <p class="text-xs text-slate-500 mt-3">Sistem membalik semua activity terkait dari hari ini mundur ke tanggal back-valued, lalu memutar ulang dari tanggal itu ke hari ini — accounting entries dibuat untuk keduanya.</p>
+  </div>
+  <div class="bg-white rounded-2xl border border-slate-200 p-6">
+    <h2 class="font-bold text-blue-900 mb-2">Renewal / Change Product</h2>
+    <ul class="text-sm space-y-2">
+      <li>• <b>ROLLOVER</b>: renewal dengan kondisi lama/revisi — hanya kondisi TRACKING yang ditrack.</li>
+      <li>• <b>RESET</b>: pada payment end date; reset kondisi sesuai setup reset di level produk.</li>
+      <li>• <b>CHANGE.PRODUCT</b>: pindah ke kondisi produk baru (DEFAULT.ATTR.OPTION harus RESETTING agar berlaku).</li>
+      <li>• <b>RENEGOTIATE</b>: ubah kondisi banyak property sekaligus.</li>
+    </ul>
+  </div>
+</div>`;
+views.activities_after = ()=>{
+  window.rrRun = (n)=>{
+    const b = document.getElementById('rrbox');
+    b.textContent = n===0 ? 'ARRANGEMENT 1 Jan +500T | 31 Jan +50T | 15 Feb −100T → POSISI 450T'
+      : n===1 ? 'REVERSE dari 20 Feb mundur: −50T (31 Jan) dibalik, −100T (15 Feb) dibalik → saldo sementara 500T'
+      : 'BACK-VALUED 15 Jan +150T → REPLAY +50T & −100T → POSISI 600T';
+  };
+};
+
+/*BALANCEV*/
+views.balance = ()=>`
+<div class="p-6 max-w-4xl mx-auto space-y-6">
+  <h1 class="text-2xl font-extrabold text-blue-900">6 · Balance &amp; Accounting</h1>
+  <div class="bg-white rounded-2xl border border-slate-200 p-6">
+    <h2 class="font-bold text-blue-900 mb-2">Balance AA</h2>
+    <p class="text-sm text-slate-700 mb-3">Beberapa property punya satu atau lebih balance; balance = komponen finansial produk. Nama balance = <span class="mono bg-slate-100 px-2 rounded">Prefix + Property [+SP]</span>, mis. <b>ACCPRINCIPALINT</b>.</p>
+    <div class="grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs">
+      ${[['CUR','Current (TERM.AMOUNT, ACCOUNT)'],['ACC','Accrued (INTEREST, CHARGE)'],['DUE','Due (ACCOUNT, INTEREST, CHARGE)'],['AGE','Overdue (ACCOUNT, INTEREST, CHARGE)'],['UNC','Unallocated Credit (ACCOUNT)'],['UND','Unallocated Debit (ACCOUNT)'],['SP','suffix suspend / non-accrual'],['CURCOMMIT','Commitment (contingent)'],['CURCOMMITBL','Contingent balancing']].map(([p,d])=>`
+      <div class="bg-slate-50 rounded-xl p-3"><span class="mono font-bold text-blue-800">${p}</span><div class="text-slate-500 mt-1">${d}</div></div>`).join('')}
+    </div>
+    <div class="mt-4 text-sm"><b>AC.BALANCE.TYPE</b>: Reporting Type Contingent / Non-contingent / Internal; Virtual (penjumlahan balance untuk kalkulasi, mis. penalty interest dari semua overdue, grace excludes DUE, commitment fee dari undrawn); Activity Update (history file ACCT.ACTIVITY); Suspend Balance.</div>
+  </div>
+  <div class="bg-white rounded-2xl border border-slate-200 p-6">
+    <h2 class="font-bold text-blue-900 mb-2">Contoh Alur (klik untuk membedah)</h2>
+    <div class="space-y-2 text-sm" id="balsteps"></div>
+  </div>
+  <div class="bg-white rounded-2xl border border-slate-200 p-6">
+    <h2 class="font-bold text-blue-900 mb-2">Suspension &amp; Resume</h2>
+    <ul class="text-sm space-y-2">
+      <li>• Arrangement suspended: sisi customer tetap normal (due, capitalised), bank <b>tidak booking P&L</b>; accrual ke balance <span class="mono">ACCLOANINTSP</span>.</li>
+      <li>• Property harus PROPERTY.TYPE = SUSPEND (hanya INTEREST &amp; CHARGE); SUSPEND.OVERDUES membalik overdue yang sudah masuk P&L.</li>
+      <li>• Saat repayment pada arrangement suspended, P&L direalisasikan otomatis. Trigger: otomatis oleh aging, atau manual.</li>
+      <li>• <b>Resume</b>: kebalikan suspension, manual — menyetel accrual suspend ke P&L dan charge income ke P&L.</li>
+    </ul>
+  </div>
+  <div class="bg-white rounded-2xl border border-slate-200 p-6">
+    <h2 class="font-bold text-blue-900 mb-2">Rules Based Accounting</h2>
+    <ul class="text-sm space-y-2">
+      <li>• Aplikasi AA menghasilkan <b>Accounting Event</b> (contract id, balance type, amount, value date).</li>
+      <li>• <b>AC.ALLOCATION.RULE</b>: target balance, contra balance, transaction codes, movement detail → posting entries STMT.ENTRY / CATEG.ENTRY / SPEC.ENTRY via AC.POSTING.DETAIL.</li>
+      <li>• ACCOUNTING property: ACCT.ACTION (action dengan ACCOUNTING=Yes) + ACCT.RULE per property; amortisasi charge (AMORT, MATURITY/1M/1Y).</li>
+      <li>• Praktik: copy allocation rule <span class="mono">DEBIT-CHARGE</span> untuk property interest/charge baru, ganti P&L category.</li>
+      <li>• Data: EB.CONTRACT.BALANCES (saldo per AA account), ACCT.ACTIVITY (historis), consolidation memakai balance type (CURACCOUNT, ACCLOANINT).</li>
+    </ul>
+  </div>
+  <div class="bg-white rounded-2xl border border-slate-200 p-6">
+    <h2 class="font-bold text-blue-900 mb-2">Enquiries Bawaan Arrangement</h2>
+    <div class="grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs">
+      ${[['Balance','commitment, current/due principal, pending charges, UNC/UND'],['Activity Log','semua activity per tanggal & sequence, drill down; basis reverse & replay'],['Bills','due date, type, amount, outstanding, status'],['Messages','pesan terkait activity'],['Payment Schedule','scheduled date, amount, outstanding principal/interest/total']].map(([t,d])=>`<div class="bg-blue-50 rounded-xl p-3 font-semibold text-blue-900">${t}<div class="font-normal text-slate-600 mt-1">${d}</div></div>`).join('')}
+    </div>
+  </div>
+</div>`;
+views.balance_after = ()=>{
+  const steps = [
+    ['1. New Loan 100.000 (commitment)','CURCOMMIT +100.000 · [CURCOMMITBL contingent +100.000]'],
+    ['2. Disburse 75.000','CURLOANAC 75.000 ↔ Customer A/C 75.000 · CURCOMMIT −75.000 / CURCOMMITBL −75.000'],
+    ['3. Accrual interest 300','ACCPRININT 300 ↔ P&L 51000 300'],
+    ['4. Make Due 1.000 (interest 300 + principal 700)','DUELOANAC 700 ← CURLOANAC · DUEPRININT 300 ← ACCPRININT (P&L 300)'],
+    ['5. Age ke OD1 (700 prin + 300 int)','OD1LOANAC 700 ← DUELOANAC · OD1PRININT 300 ← DUEPRININT'],
+    ['6. Repay 1.500','Customer 1.500 → OD1PRININT 300 + OD1LOANAC 700 + CURLOANAC 500 (P&L 300)']
+  ];
+  document.getElementById('balsteps').innerHTML = steps.map(([t,d],i)=>`
+   <details class="border border-slate-200 rounded-xl p-3">
+     <summary class="font-semibold">${t}</summary>
+     <div class="mono text-xs bg-slate-50 p-3 rounded-lg mt-2">${d}</div>
+   </details>`).join('');
+};
+
+let quizIdx = 0, quizScore = 0, quizDone = false;
+views.quiz = ()=>`
+<div class="p-6 max-w-3xl mx-auto">
+  <h1 class="text-2xl font-extrabold text-blue-900 mb-1">Quiz &amp; Latihan</h1>
+  <p class="text-sm text-slate-500 mb-4">${QUIZ.length} soal dari quiz resmi dokumen (Quiz 1–9). Skor tersimpan selama sesi.</p>
+  <div class="flex items-center justify-between text-sm mb-4 bg-white border border-slate-200 rounded-xl px-4 py-3">
+    <span class="font-semibold">Soal <span id="qnum"></span>/${QUIZ.length}</span>
+    <span class="font-semibold text-emerald-700">Skor: <span id="qscore">0</span></span>
+  </div>
+  <div id="qbox" class="bg-white rounded-2xl border border-slate-200 p-6"></div>
+  <div class="flex justify-between mt-4">
+    <button id="qprev" onclick="quizMove(-1)" class="text-sm px-4 py-2 rounded-lg bg-slate-100 font-semibold hover:bg-slate-200">← Sebelumnya</button>
+    <button id="qnext" onclick="quizMove(1)" class="text-sm px-4 py-2 rounded-lg bg-blue-900 text-white font-semibold hover:bg-blue-800">Berikutnya →</button>
+  </div>
+</div>`;
+views.quiz_after = ()=>{quizIdx=0;quizScore=0;quizDone=false;renderQuiz();};
+function renderQuiz(){
+  const q = QUIZ[quizIdx];
+  const ans = window['qa'+quizIdx];
+  document.getElementById('qnum').textContent = quizIdx+1;
+  document.getElementById('qscore').textContent = quizScore;
+  document.getElementById('qbox').innerHTML = `
+    <div class="font-semibold text-lg mb-4">${q.q}</div>
+    ${q.o.map((o,i)=>`
+      <button onclick="quizAns(${i})" class="w-full text-left text-sm border rounded-xl px-4 py-3 mb-2 ${ans===undefined?'border-slate-200 hover:border-blue-400 hover:bg-blue-50':(i===q.a?'border-emerald-400 bg-emerald-50':(ans===i?'border-red-400 bg-red-50':'border-slate-200 opacity-60'))}">
+        <span class="font-bold mr-2 ${'ABCDE'[i]}">${'ABCDE'[i]}.</span>${o}
+      </button>`).join('')}
+    ${ans!==undefined?`<div class="mt-3 bg-slate-50 border-l-4 border-blue-400 p-4 rounded-r-lg text-sm"><b>${ans===q.a?'✓ Benar!':'✗ Kurang tepat.'}</b> ${q.e}</div>`:''}`;
+  document.getElementById('qprev').disabled = quizIdx===0;
+  document.getElementById('qprev').style.opacity = quizIdx===0?0.4:1;
+  document.getElementById('qnext').textContent = quizIdx===QUIZ.length-1?'Selesai ✓':'Berikutnya →';
+}
+function quizAns(i){
+  const q = QUIZ[quizIdx];
+  if(window['qa'+quizIdx]!==undefined) return;
+  window['qa'+quizIdx]=i;
+  if(i===q.a) quizScore++;
+  renderQuiz();
+}
+function quizMove(d){
+  if(quizIdx===QUIZ.length-1 && d===1){alert('Skor akhir: '+quizScore+'/'+QUIZ.length+' ('+Math.round(quizScore/QUIZ.length*100)+'%)\n\n'+(quizScore/QUIZ.length>=0.8?'Luar biasa! Kamu siap lanjut ke modul berikutnya.':'Tetap semangat — buka lagi modul yang belum dikuasai.'));return;}
+  quizIdx = Math.max(0, Math.min(QUIZ.length-1, quizIdx+d));
+  renderQuiz();
+}
+
+/*SIMV*/
+views.sim = ()=>`
+<div class="p-6 max-w-3xl mx-auto space-y-6">
+  <h1 class="text-2xl font-extrabold text-blue-900">Kalkulator Loan Simulator</h1>
+  <p class="text-sm text-slate-500">Alat bantu memahami payment type AA: <b>CONSTANT (annuity)</b> dan <b>LINEAR</b>, plus bunga ACTUAL (interest-only). Sesuai konsep dokumen: CONSTANT butuh Term Amount + Interest Property; LINEAR butuh Term Amount.</p>
+  <div class="bg-white rounded-2xl border border-slate-200 p-6 grid grid-cols-2 gap-4 text-sm">
+    <label class="block">Jumlah Pinjaman (Principal)<input id="samt" type="number" value="500000" class="w-full mt-1 border rounded-lg px-3 py-2"></label>
+    <label class="block">Term (bulan)<input id="sterm" type="number" value="36" class="w-full mt-1 border rounded-lg px-3 py-2"></label>
+    <label class="block">Bunga / tahun (%)<input id="srate" type="number" step="0.01" value="6" class="w-full mt-1 border rounded-lg px-3 py-2"></label>
+    <label class="block">Payment Type
+      <select id="stype" class="w-full mt-1 border rounded-lg px-3 py-2">
+        <option value="c">CONSTANT — annuity</option>
+        <option value="l">LINEAR — principal tetap</option>
+        <option value="a">ACTUAL — interest only</option>
+      </select></label>
+  </div>
+  <button onclick="calcSim()" class="bg-blue-900 text-white font-semibold text-sm px-5 py-2.5 rounded-xl hover:bg-blue-800">Hitung Jadwal</button>
+  <div id="simout"></div>
+</div>`;
+function calcSim(){
+  const P=+document.getElementById('samt').value||0, n=+document.getElementById('sterm').value||1, r=(+document.getElementById('srate').value||0)/100/12, t=document.getElementById('stype').value;
+  let rows=[], totI=0, bal=P, emi = r>0 ? P*r/(1-Math.pow(1+r,-n)) : P/n;
+  if(t==='a'){rows=[[1,emi,0,emi,P]];totI=emi;bal=P;}
+  else for(let m=1;m<=n;m++){
+    const i = t==='l' ? bal*r : emi-bal*r;
+    const p = t==='l' ? P/n : emi-i;
+    const pp = Math.min(p,bal); bal=Math.max(0,bal-pp); totI+=i;
+    rows.push([m, p+i, pp, i, bal]);
+  }
+  document.getElementById('simout').innerHTML = `
+  <div class="bg-white rounded-2xl border border-slate-200 p-6">
+    <div class="grid grid-cols-3 gap-3 text-center mb-4">
+      <div class="bg-blue-50 rounded-xl p-3"><div class="text-xs text-slate-500">Total dibayar</div><div class="font-bold text-blue-900">${(P+totI).toLocaleString('en-US',{maximumFractionDigits:2})}</div></div>
+      <div class="bg-amber-50 rounded-xl p-3"><div class="text-xs text-slate-500">Total interest</div><div class="font-bold text-amber-700">${totI.toLocaleString('en-US',{maximumFractionDigits:2})}</div></div>
+      <div class="bg-emerald-50 rounded-xl p-3"><div class="text-xs text-slate-500">Angsuran ${t==='l'?'pertama':'bulanan'}</div><div class="font-bold text-emerald-700">${rows[0][1].toLocaleString('en-US',{maximumFractionDigits:2})}</div></div>
+    </div>
+    <div class="overflow-x-auto max-h-80"><table class="w-full text-xs mono">
+      <tr class="bg-slate-50 text-left"><th class="p-2">Bulan</th><th class="p-2">Angsuran</th><th class="p-2">Principal</th><th class="p-2">Interest</th><th class="p-2">Outstanding</th></tr>
+      ${rows.map(r=>`<tr><td class="p-2">${r[0]}</td><td class="p-2">${r[1].toLocaleString('en-US',{maximumFractionDigits:2})}</td><td class="p-2">${r[2].toLocaleString('en-US',{maximumFractionDigits:2})}</td><td class="p-2">${r[3].toLocaleString('en-US',{maximumFractionDigits:2})}</td><td class="p-2">${r[4].toLocaleString('en-US',{maximumFractionDigits:2})}</td></tr>`).join('')}
+    </table></div>
+    <p class="text-xs text-slate-400 mt-2">Catatan: penyederhanaan edukasi — T24 AA juga memperhitungkan day basis, tiered rate, charges, recalculation, dsb.</p>
+  </div>`;
+}
+
+/*GLOSAV*/
+views.glosarium = ()=>{
+  const q='';
+  return `
+  <div class="p-6 max-w-3xl mx-auto">
+    <h1 class="text-2xl font-extrabold text-blue-900 mb-1">Glosarium</h1>
+    <p class="text-sm text-slate-500 mb-4">Istilah-istilah penting AA Loan. Klik untuk membuka.</p>
+    <input id="glsearch" placeholder="Cari istilah…" class="w-full mb-4 px-4 py-2.5 rounded-xl border border-slate-200 text-sm" oninput="renderGlos()">
+    <div id="gllist" class="space-y-2"></div>
+  </div>`;
+};
+views.glosarium_after = ()=>renderGlos();
+function renderGlos(){
+  const q = (document.getElementById('glsearch')?.value||'').toLowerCase();
+  const el = document.getElementById('gllist'); if(!el) return;
+  el.innerHTML = GLOSSARY.filter(([t,d])=>(t+d).toLowerCase().includes(q)).map(([t,d])=>`
+  <details class="bg-white border border-slate-200 rounded-xl p-4">
+    <summary class="font-semibold text-blue-900 text-sm">${t}</summary>
+    <p class="text-sm text-slate-600 mt-2 leading-relaxed">${d}</p>
+  </details>`).join('');
+}
+
+/*CHATV*/
+let chatHist = [];
+views.chatbot = ()=>`
+<div class="flex flex-col h-screen">
+  <div class="border-b border-slate-200 bg-white px-6 py-4">
+    <div class="font-extrabold text-blue-900">💬 Chatbot AA Loan</div>
+    <div class="text-xs text-slate-500">Menjawab berdasarkan materi dokumen "Arrangement Architecture – Loans". Coba: "jelaskan overdue", "payment schedule", "reverse dan replay", "quiz".</div>
+  </div>
+  <div id="chatlog" class="flex-1 overflow-y-auto p-6 space-y-3 bg-slate-50"></div>
+  <div class="px-6 pb-2 flex gap-2 flex-wrap" id="chips">
+    ${['Apa itu AA?','Jelaskan INTEREST','Bagaimana payment rules bekerja?','Apa itu NAB / overdue?','Reverse dan replay','Jawaban quiz 9'].map(s=>`<button onclick="sendChat('${s}')" class="text-xs bg-white border border-slate-200 rounded-full px-3 py-1.5 hover:border-blue-400">${s}</button>`).join('')}
+  </div>
+  <div class="p-4 border-t border-slate-200 bg-white flex gap-2">
+    <input id="chatin" placeholder="Tulis pertanyaanmu…" class="flex-1 border border-slate-200 rounded-xl px-4 py-2.5 text-sm" onkeydown="if(event.key==='Enter')sendChat()">
+    <button onclick="sendChat()" class="bg-blue-900 text-white font-semibold text-sm px-5 rounded-xl hover:bg-blue-800">Kirim</button>
+  </div>
+</div>`;
+views.chatbot_after = ()=>{
+  chatHist=[];
+  document.getElementById('chatlog').innerHTML='';
+  botSay('Halo! Saya asisten belajar AA Loan. Tanyakan apa saja seputar materi dokumen — property class, accounting, simulation, quiz, dan lainnya. 😊'.replace(' 😊',''));
+};
+function botSay(t,src){
+  const log = document.getElementById('chatlog'); if(!log) return;
+  log.insertAdjacentHTML('beforeend',`<div class="max-w-2xl bg-white border border-slate-200 rounded-2xl rounded-tl-sm p-4 text-sm leading-relaxed shadow-sm">${t}${src?`<div class="text-[10px] text-slate-400 mt-2">Sumber materi: ${src}</div>`:''}</div>`);
+  log.scrollTop = log.scrollHeight;
+}
+function userSay(t){
+  document.getElementById('chatlog').insertAdjacentHTML('beforeend',`<div class="max-w-2xl ml-auto bg-blue-900 text-white rounded-2xl rounded-tr-sm p-4 text-sm shadow-sm">${t}</div>`);
+  document.getElementById('chatlog').scrollTop = 1e9;
+}
+function chatScore(q){
+  q = q.toLowerCase();
+  let best=null,bs=0;
+  for(const e of KB){
+    let s=0;
+    e.k.split(' ').forEach(w=>{if(w.length>2 && q.includes(w)) s+= w.length>5?3:2;});
+    if(q.includes(e.a.slice(0,25).toLowerCase())) s+=1;
+    if(s>bs){bs=s;best=e;}
+  }
+  return bs>=2?best:null;
+}
+function sendChat(txt){
+  const inp = document.getElementById('chatin');
+  const q = txt || (inp?inp.value:'').trim();
+  if(!q) return;
+  if(inp) inp.value='';
+  userSay(q);
+  const e = chatScore(q);
+  setTimeout(()=>{
+    if(e) botSay(e.a,'Arrangement Architecture – Loans (Temenos)');
+    else {
+      const pch = PC.find(p=>q.toLowerCase().includes(p.id.toLowerCase().replace(/\./g,'.'))||q.toLowerCase().includes(p.name.toLowerCase()));
+      if(pch) botSay(pch.pts.join(' '), 'AA.PROPERTY.CLASS '+pch.id);
+      else botSay('Maaf, pertanyaan itu belum tercakup materi yang saya pelajari dari dokumen AA Loans. Coba kata kunci lain, misalnya: <b>interest, overdue, payment schedule, balance, simulation, payoff, limit, charge, accounting, product, quiz</b>. Kamu juga bisa buka <b>Property Class Explorer</b> untuk melihat daftar topik lengkap.');
+    }
+  },250);
+}
+
+/* ====== ROUTER ====== */
+const main = document.getElementById('main');
+function go(sec){
+  document.querySelectorAll('.navbtn').forEach(b=>b.classList.toggle('active',b.dataset.sec===sec));
+  main.innerHTML = views[sec]();
+  main.className = 'flex-1 overflow-y-auto fade';
+  if(views[sec+'_after']) views[sec+'_after']();
+  main.scrollTop = 0;
+}
+document.getElementById('nav').addEventListener('click',e=>{
+  const b = e.target.closest('.navbtn'); if(b) go(b.dataset.sec);
+});
+go('home');
+</script>
+</body>
+</html>
