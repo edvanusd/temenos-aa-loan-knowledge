@@ -24,25 +24,27 @@
     radial-gradient(900px 640px at -12% 108%, rgba(168,85,247,.10), transparent 60%),
     #0b0b10;}
   #bg3d{position:fixed;inset:0;z-index:-1;pointer-events:none}
-  .glass{background:rgba(255,255,255,.06);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);border:1px solid rgba(255,255,255,.09)}
-  .glass-hover:hover{background:rgba(255,255,255,.10);border-color:rgba(255,255,255,.16)}
+  .glass{background:rgba(18,18,25,.62);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border:1px solid rgba(255,255,255,.12)}
+  .glass-hover:hover{background:rgba(28,28,36,.72);border-color:rgba(255,255,255,.18)}
   .hero-grad{background:linear-gradient(135deg,#ff5e5b 0%,#f43f5e 55%,#be123c 100%)}
-  .sidebar-glass{background:rgba(255,255,255,.045);backdrop-filter:blur(24px);border-right:1px solid rgba(255,255,255,.08)}
-  .searchpill{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1)}
+  .sidebar-glass{background:rgba(14,14,19,.85);backdrop-filter:blur(24px);border-right:1px solid rgba(255,255,255,.09)}
+  .searchpill{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12)}
 
   /* ==== Consistent reskin of content classes ==== */
-  main .bg-white, #pcdetail .bg-white, #chatlog .bg-white{background:rgba(255,255,255,.06)!important;backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px)}
-  main .border-slate-200, #pcdetail .border-slate-200{border-color:rgba(255,255,255,.10)}
-  main .border-slate-100, #pcdetail .border-slate-100{border-color:rgba(255,255,255,.07)}
-  main .bg-slate-50{background:rgba(255,255,255,.05)!important}
-  main .bg-slate-100{background:rgba(255,255,255,.10)!important}
-  main .bg-slate-900{background:#0d0d13;border:1px solid rgba(255,255,255,.10)}
-  .text-slate-800,.text-slate-700,.text-slate-600{color:#dcdce2}
-  .text-slate-500{color:#a6a6b0}.text-slate-400{color:#8e8e99}
+  main .bg-white, #pcdetail .bg-white, #chatlog .bg-white{background:rgba(18,18,25,.72)!important;backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px)}
+  main .border-slate-200, #pcdetail .border-slate-200{border-color:rgba(255,255,255,.12)}
+  main .border-slate-100, #pcdetail .border-slate-100{border-color:rgba(255,255,255,.08)}
+  main .bg-slate-50{background:rgba(255,255,255,.07)!important}
+  main .bg-slate-100{background:rgba(255,255,255,.12)!important}
+  main .bg-slate-900{background:#0d0d13;border:1px solid rgba(255,255,255,.12)}
+  .text-slate-800,.text-slate-700,.text-slate-600{color:#e8e8ee}
+  .text-slate-500{color:#b8b8c4}
+  .text-slate-400{color:#acacba}
+  .text-slate-300{color:#cfcfd8}
   .text-blue-900,.text-indigo-900,.text-blue-800,.text-indigo-800{color:#ffffff}
-  .text-blue-700,.text-indigo-700{color:#ff8a87}
-  .text-emerald-700{color:#4ade80}.text-amber-700,.text-amber-800{color:#fbbf24}
-  .text-blue-500{color:#ff6b68}.text-blue-100,.text-blue-200,.text-indigo-100{color:#ffe4e6}
+  .text-blue-700,.text-indigo-700{color:#ffb3b1}
+  .text-emerald-700{color:#6ee7a0}.text-amber-700,.text-amber-800{color:#fcd34d}
+  .text-blue-500{color:#ff8a87}.text-blue-100,.text-blue-200,.text-indigo-100{color:#fff0f0}
   .text-red-700,.text-rose-600{color:#fda4af}
   main .bg-blue-900{background:linear-gradient(135deg,#ff5e5b,#e11d48)}
   main .hover\:bg-blue-800:hover{background:#f43f5e}
@@ -58,10 +60,10 @@
   main .bg-red-100{background:rgba(244,63,94,.16)}
   main .bg-amber-100{background:rgba(251,191,36,.14)}
   main table{border-collapse:collapse}
-  main table th{color:#f4f4f5;background:rgba(255,255,255,.07);border-bottom:1px solid rgba(255,255,255,.10)}
-  main table td{border-color:rgba(255,255,255,.07)}
-  main input, main select, #chatin{background:rgba(255,255,255,.08)!important;border:1px solid rgba(255,255,255,.14)!important;color:#e6e6ea}
-  main input::placeholder,#chatin::placeholder{color:#8e8e99}
+  main table th{color:#fff;background:rgba(255,255,255,.08);border-bottom:1px solid rgba(255,255,255,.12)}
+  main table td{border-color:rgba(255,255,255,.08)}
+  main input, main select, #chatin{background:rgba(255,255,255,.10)!important;border:1px solid rgba(255,255,255,.16)!important;color:#fff}
+  main input::placeholder,#chatin::placeholder{color:#b8b8c4}
   main input:focus,main select:focus,#chatin:focus{outline:2px solid rgba(255,94,91,.5);outline-offset:1px}
   .ring-track{stroke:rgba(255,255,255,.25)}
   .spark{overflow:visible}
@@ -74,6 +76,14 @@
   .lift:hover{transform:translateY(-5px);box-shadow:0 14px 40px -12px rgba(0,0,0,.55);border-color:rgba(255,255,255,.16)}
   .hero-grad.lift:hover{box-shadow:0 18px 50px -12px rgba(244,63,94,.45)}
   @media (prefers-reduced-motion:reduce){ .rise{animation:none} .lift{transition:none} }
+
+  /* ==== Readability: minimum sizes & weights for micro text ==== */
+  .text-\[10px\]{font-size:11px;line-height:1.35}
+  .text-\[11px\]{font-size:12px;line-height:1.4}
+  main .text-xs{line-height:1.45}
+  .chip{font-size:11.5px;padding:2px 10px}
+  main details, main summary{color:#e8e8ee}
+  main b, main strong{color:#fff}
 
   /* ==== Responsive sidebar: drawer on small screens ==== */
   .mobilebar{display:none}
@@ -1409,14 +1419,14 @@ go('home');
         vec3 burntO = vec3(0.78,0.26,0.12);
         vec3 peach  = vec3(1.0,0.62,0.42);
         vec3 col = mix(base, deepR, smoothstep(0.15,0.65,f));
-        col = mix(col, burntO, smoothstep(0.42,0.85,f*length(q))*0.55);
-        col = mix(col, peach, smoothstep(0.62,0.95,f*r.x)*0.28);
+        col = mix(col, burntO, smoothstep(0.42,0.85,f*length(q))*0.38);
+        col = mix(col, peach, smoothstep(0.62,0.95,f*r.x)*0.15);
         // mouse-follow warm glow
         float d = distance(uv, uMouse);
-        col += vec3(0.5,0.18,0.12)*0.14*(1.0-smoothstep(0.0,0.45,d));
+        col += vec3(0.5,0.18,0.12)*0.10*(1.0-smoothstep(0.0,0.45,d));
         // vignette
         float vig = smoothstep(1.25,0.35,length(uv-0.5));
-        col *= mix(0.55,1.0,vig);
+        col *= mix(0.5,0.95,vig);
         gl_FragColor = vec4(col,1.0);
       }`;
     const mat = new THREE.ShaderMaterial({
