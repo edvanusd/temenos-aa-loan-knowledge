@@ -7,60 +7,125 @@
 <script src="https://cdn.tailwindcss.com"></script>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
 <style>
-  body{font-family:'Inter',sans-serif}
+  body{font-family:'Inter',sans-serif;background:#08080b;color:#e4e4e7}
   code,.mono{font-family:'JetBrains Mono',monospace}
-  .navbtn.active{background:#1e3a8a;color:#fff}
+  .navbtn.active{background:#f4f4f5;color:#0a0a0c}
   .fade{animation:fade .25s ease}
   @keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
   .chip{font-size:11px;padding:2px 8px;border-radius:999px;font-weight:600}
   details>summary{cursor:pointer;list-style:none}
   details>summary::-webkit-details-marker{display:none}
-  ::-webkit-scrollbar{width:8px;height:8px}::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:8px}
+  ::-webkit-scrollbar{width:8px;height:8px}::-webkit-scrollbar-thumb{background:rgba(255,255,255,.14);border-radius:8px}::-webkit-scrollbar-track{background:transparent}
+
+  /* ==== Glassmorphism theme (V24-style) ==== */
+  .appbg{position:fixed;inset:0;z-index:-1;background:
+    radial-gradient(900px 600px at 85% -10%, rgba(255,94,91,.28), transparent 60%),
+    radial-gradient(700px 500px at -10% 110%, rgba(244,114,182,.16), transparent 60%),
+    radial-gradient(600px 400px at 50% 60%, rgba(255,255,255,.04), transparent 60%),
+    #08080b;}
+  .glass{background:rgba(255,255,255,.055);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border:1px solid rgba(255,255,255,.09)}
+  .glass-hover:hover{background:rgba(255,255,255,.09);border-color:rgba(255,255,255,.16)}
+  .hero-grad{background:linear-gradient(135deg,#ff5e5b 0%,#f43f5e 55%,#be123c 100%)}
+  .sidebar-glass{background:rgba(255,255,255,.045);backdrop-filter:blur(24px);border-right:1px solid rgba(255,255,255,.08)}
+  .searchpill{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1)}
+
+  /* Global dark reskin of existing content classes */
+  main .bg-white, #pcdetail .bg-white{background:rgba(255,255,255,.05)!important;backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px)}
+  main .border-slate-200, #pcdetail .border-slate-200{border-color:rgba(255,255,255,.09)}
+  main .border-slate-100{border-color:rgba(255,255,255,.06)}
+  main .bg-slate-50{background:rgba(255,255,255,.045)!important}
+  main .bg-slate-100{background:rgba(255,255,255,.09)!important}
+  main .bg-slate-900{background:rgba(0,0,0,.45)}
+  .text-slate-800,.text-slate-700,.text-slate-600{color:#d4d4d8}
+  .text-slate-500{color:#a1a1aa}.text-slate-400{color:#8b8b96}
+  .text-blue-900,.text-indigo-900{color:#fecdd3}
+  .text-blue-800{color:#fda4af}.text-blue-700{color:#fb7185}
+  .text-emerald-700{color:#34d399}.text-amber-700,.text-amber-800{color:#fbbf24}
+  .text-blue-500{color:#ff5e5b}.text-blue-100,.text-blue-200{color:#ffe4e6}
+  main .bg-blue-900{background:linear-gradient(135deg,#ff5e5b,#e11d48)}
+  main .hover\:bg-blue-800:hover{background:#f43f5e}
+  main .hover\:bg-blue-50:hover{background:rgba(255,255,255,.08)}
+  main .hover\:bg-slate-100:hover, main .hover\:bg-slate-200:hover{background:rgba(255,255,255,.09)}
+  main .hover\:bg-slate-50:hover{background:rgba(255,255,255,.07)}
+  main .bg-blue-50{background:rgba(255,94,91,.14)}
+  main .bg-blue-100{background:rgba(255,94,91,.18)}
+  main .bg-emerald-100{background:rgba(16,185,129,.18)}
+  main .bg-red-100{background:rgba(244,63,94,.18)}
+  main .bg-amber-100{background:rgba(251,191,36,.18)}
+  main .text-red-700, main .text-rose-600{color:#fda4af}
+  main .text-amber-800{color:#fcd34d}
+  main .bg-indigo-50{background:rgba(129,140,248,.12)}
+  main .bg-emerald-50{background:rgba(16,185,129,.1)}
+  main .bg-amber-50{background:rgba(251,191,36,.08)}
+  main .bg-red-50{background:rgba(244,63,94,.1)}
+  .text-white{color:#fff}
+  main table th{color:#e4e4e7}
+  main input, main select{background:rgba(255,255,255,.07)!important;border:1px solid rgba(255,255,255,.12)!important;color:#e4e4e7}
+  main input::placeholder{color:#8b8b96}
+  main .border-l-4{border-left-width:4px}
+  #chatlog{background:transparent}
+  .ring-track{stroke:rgba(255,255,255,.25)}
+  .spark{overflow:visible}
 </style>
 </head>
-<body class="bg-slate-100 text-slate-800">
-
+<body class="text-slate-200">
+<div class="appbg"></div>
 <div class="flex h-screen overflow-hidden">
   <!-- SIDEBAR -->
-  <aside class="w-64 bg-white border-r border-slate-200 flex flex-col shrink-0">
-    <div class="p-4 border-b border-slate-200">
-      <div class="font-extrabold text-lg text-blue-900 leading-tight">Temenos Knowledge<br>Management</div>
-      <div class="text-xs text-slate-500 mt-1">T24 AA — Loans (R10.3)</div>
+  <aside class="w-64 sidebar-glass flex flex-col shrink-0">
+    <div class="p-4">
+      <div class="flex items-center gap-2.5">
+        <div class="w-9 h-9 rounded-xl hero-grad flex items-center justify-center text-white font-extrabold text-sm">AA</div>
+        <div>
+          <div class="font-bold text-white text-sm leading-tight">Temenos KM</div>
+          <div class="text-[10px] text-slate-400">Glass workspace</div>
+        </div>
+      </div>
+      <div class="searchpill mt-4 flex items-center gap-2 px-3 py-2 rounded-full">
+        <span class="text-slate-400 text-xs">🔍</span>
+        <span class="text-xs text-slate-400">Ask or search...</span>
+        <span class="ml-auto text-[10px] text-slate-500 border border-white/10 rounded px-1.5 py-0.5">⌘K</span>
+      </div>
     </div>
-    <nav class="flex-1 overflow-y-auto p-3 space-y-1 text-sm" id="nav">
-      <button data-sec="home" class="navbtn w-full text-left px-3 py-2 rounded-lg hover:bg-slate-100 font-medium">🏠 Beranda</button>
-      <div class="pt-2 px-3 text-[11px] font-bold text-slate-400 uppercase tracking-wider">AA Lending — Kursus Utama</div>
-      <button data-sec="m1" class="navbtn w-full text-left px-3 py-2 rounded-lg hover:bg-slate-100 font-medium">1. Pengenalan Temenos &amp; AA</button>
-      <button data-sec="m2" class="navbtn w-full text-left px-3 py-2 rounded-lg hover:bg-slate-100 font-medium">2. Hierarki Produk AA</button>
-      <button data-sec="m3" class="navbtn w-full text-left px-3 py-2 rounded-lg hover:bg-slate-100 font-medium">3. Konfigurasi Produk</button>
-      <button data-sec="m4" class="navbtn w-full text-left px-3 py-2 rounded-lg hover:bg-slate-100 font-medium">4. Loan Booking (Arrangement)</button>
-      <button data-sec="m5" class="navbtn w-full text-left px-3 py-2 rounded-lg hover:bg-slate-100 font-medium">5. Disbursement</button>
-      <button data-sec="m6" class="navbtn w-full text-left px-3 py-2 rounded-lg hover:bg-slate-100 font-medium">6. Interest Accrual &amp; COB</button>
-      <button data-sec="m7" class="navbtn w-full text-left px-3 py-2 rounded-lg hover:bg-slate-100 font-medium">7. Repayment &amp; EMI</button>
-      <button data-sec="m8" class="navbtn w-full text-left px-3 py-2 rounded-lg hover:bg-slate-100 font-medium">8. Overdue &amp; Delinquency</button>
-      <button data-sec="m9" class="navbtn w-full text-left px-3 py-2 rounded-lg hover:bg-slate-100 font-medium">9. Rescheduling / Restructuring</button>
-      <button data-sec="m10" class="navbtn w-full text-left px-3 py-2 rounded-lg hover:bg-slate-100 font-medium">10. Prepayment, Payoff &amp; Closure</button>
-      <div class="pt-2 px-3 text-[11px] font-bold text-slate-400 uppercase tracking-wider">AA Lanjutan</div>
-      <button data-sec="m11" class="navbtn w-full text-left px-3 py-2 rounded-lg hover:bg-slate-100 font-medium">11. Accounting (GL, STMT/CATEG)</button>
-      <button data-sec="m13" class="navbtn w-full text-left px-3 py-2 rounded-lg hover:bg-slate-100 font-medium">12. Limits &amp; Collateral</button>
-      <button data-sec="m14" class="navbtn w-full text-left px-3 py-2 rounded-lg hover:bg-slate-100 font-medium">13. Konfigurasi Produk Lanjutan</button>
-      <button data-sec="m15" class="navbtn w-full text-left px-3 py-2 rounded-lg hover:bg-slate-100 font-medium">14. End-to-End Testing</button>
-      <button data-sec="ivq" class="navbtn w-full text-left px-3 py-2 rounded-lg hover:bg-slate-100 font-medium">🎤 Bank Pertanyaan Interview</button>
-      <div class="pt-2 px-3 text-[11px] font-bold text-slate-400 uppercase tracking-wider">AA Deep Dive — Loans</div>
-      <button data-sec="konsep" class="navbtn w-full text-left px-3 py-2 rounded-lg hover:bg-slate-100 font-medium pl-5">▸ Konsep Dasar AA</button>
-      <button data-sec="tabel" class="navbtn w-full text-left px-3 py-2 rounded-lg hover:bg-slate-100 font-medium pl-5">▸ Tabel &amp; Struktur Data</button>
-      <button data-sec="propclass" class="navbtn w-full text-left px-3 py-2 rounded-lg hover:bg-slate-100 font-medium pl-5">▸ Property Class Explorer</button>
-      <button data-sec="product" class="navbtn w-full text-left px-3 py-2 rounded-lg hover:bg-slate-100 font-medium pl-5">▸ Membangun Produk</button>
-      <button data-sec="activities" class="navbtn w-full text-left px-3 py-2 rounded-lg hover:bg-slate-100 font-medium pl-5">▸ Aktivitas, Simulasi &amp; Reverse</button>
-      <button data-sec="balance" class="navbtn w-full text-left px-3 py-2 rounded-lg hover:bg-slate-100 font-medium pl-5">▸ Balance &amp; Accounting</button>
-      <div class="pt-2 px-3 text-[11px] font-bold text-slate-400 uppercase tracking-wider">Interaktif</div>
-      <button data-sec="quiz" class="navbtn w-full text-left px-3 py-2 rounded-lg hover:bg-slate-100 font-medium">🧠 Quiz &amp; Latihan</button>
-      <button data-sec="sim" class="navbtn w-full text-left px-3 py-2 rounded-lg hover:bg-slate-100 font-medium">🧮 Kalkulator Loan Simulator</button>
-      <button data-sec="glosarium" class="navbtn w-full text-left px-3 py-2 rounded-lg hover:bg-slate-100 font-medium">📖 Glosarium</button>
-      <button data-sec="chatbot" class="navbtn w-full text-left px-3 py-2 rounded-lg hover:bg-slate-100 font-medium">💬 Chatbot AA Loan</button>
+    <nav class="flex-1 overflow-y-auto px-3 pb-3 space-y-1 text-sm" id="nav">
+      <div class="px-2 pt-1 text-[10px] font-bold text-slate-500 uppercase tracking-wider">Main</div>
+      <button data-sec="home" class="navbtn w-full text-left px-3 py-2 rounded-full hover:bg-white/5 font-medium flex items-center gap-2.5">🏠 Dashboard</button>
+      <div class="px-2 pt-3 text-[10px] font-bold text-slate-500 uppercase tracking-wider">Workspace · AA Lending</div>
+      <button data-sec="m1" class="navbtn w-full text-left px-3 py-1.5 rounded-full hover:bg-white/5 text-[13px] flex items-center gap-2.5"><span class="w-5 text-center text-slate-400">1</span>Pengenalan Temenos &amp; AA</button>
+      <button data-sec="m2" class="navbtn w-full text-left px-3 py-1.5 rounded-full hover:bg-white/5 text-[13px] flex items-center gap-2.5"><span class="w-5 text-center text-slate-400">2</span>Hierarki Produk AA</button>
+      <button data-sec="m3" class="navbtn w-full text-left px-3 py-1.5 rounded-full hover:bg-white/5 text-[13px] flex items-center gap-2.5"><span class="w-5 text-center text-slate-400">3</span>Konfigurasi Produk</button>
+      <button data-sec="m4" class="navbtn w-full text-left px-3 py-1.5 rounded-full hover:bg-white/5 text-[13px] flex items-center gap-2.5"><span class="w-5 text-center text-slate-400">4</span>Loan Booking</button>
+      <button data-sec="m5" class="navbtn w-full text-left px-3 py-1.5 rounded-full hover:bg-white/5 text-[13px] flex items-center gap-2.5"><span class="w-5 text-center text-slate-400">5</span>Disbursement</button>
+      <button data-sec="m6" class="navbtn w-full text-left px-3 py-1.5 rounded-full hover:bg-white/5 text-[13px] flex items-center gap-2.5"><span class="w-5 text-center text-slate-400">6</span>Interest Accrual &amp; COB</button>
+      <button data-sec="m7" class="navbtn w-full text-left px-3 py-1.5 rounded-full hover:bg-white/5 text-[13px] flex items-center gap-2.5"><span class="w-5 text-center text-slate-400">7</span>Repayment &amp; EMI</button>
+      <button data-sec="m8" class="navbtn w-full text-left px-3 py-1.5 rounded-full hover:bg-white/5 text-[13px] flex items-center gap-2.5"><span class="w-5 text-center text-slate-400">8</span>Overdue &amp; Delinquency</button>
+      <button data-sec="m9" class="navbtn w-full text-left px-3 py-1.5 rounded-full hover:bg-white/5 text-[13px] flex items-center gap-2.5"><span class="w-5 text-center text-slate-400">9</span>Rescheduling</button>
+      <button data-sec="m10" class="navbtn w-full text-left px-3 py-1.5 rounded-full hover:bg-white/5 text-[13px] flex items-center gap-2.5"><span class="w-5 text-center text-slate-400">10</span>Payoff &amp; Closure</button>
+      <button data-sec="m11" class="navbtn w-full text-left px-3 py-1.5 rounded-full hover:bg-white/5 text-[13px] flex items-center gap-2.5"><span class="w-5 text-center text-slate-400">11</span>Accounting</button>
+      <button data-sec="m13" class="navbtn w-full text-left px-3 py-1.5 rounded-full hover:bg-white/5 text-[13px] flex items-center gap-2.5"><span class="w-5 text-center text-slate-400">12</span>Limits &amp; Collateral</button>
+      <button data-sec="m14" class="navbtn w-full text-left px-3 py-1.5 rounded-full hover:bg-white/5 text-[13px] flex items-center gap-2.5"><span class="w-5 text-center text-slate-400">13</span>Konfigurasi Lanjutan</button>
+      <button data-sec="m15" class="navbtn w-full text-left px-3 py-1.5 rounded-full hover:bg-white/5 text-[13px] flex items-center gap-2.5"><span class="w-5 text-center text-slate-400">14</span>E2E Testing</button>
+      <button data-sec="ivq" class="navbtn w-full text-left px-3 py-1.5 rounded-full hover:bg-white/5 text-[13px] flex items-center gap-2.5"><span class="w-5 text-center">🎤</span>Pertanyaan Interview</button>
+      <div class="px-2 pt-3 text-[10px] font-bold text-slate-500 uppercase tracking-wider">Deep Dive</div>
+      <button data-sec="konsep" class="navbtn w-full text-left px-3 py-1.5 rounded-full hover:bg-white/5 text-[13px]">▸ Konsep Dasar AA</button>
+      <button data-sec="tabel" class="navbtn w-full text-left px-3 py-1.5 rounded-full hover:bg-white/5 text-[13px]">▸ Tabel &amp; Struktur</button>
+      <button data-sec="propclass" class="navbtn w-full text-left px-3 py-1.5 rounded-full hover:bg-white/5 text-[13px]">▸ Property Class Explorer</button>
+      <button data-sec="product" class="navbtn w-full text-left px-3 py-1.5 rounded-full hover:bg-white/5 text-[13px]">▸ Membangun Produk</button>
+      <button data-sec="activities" class="navbtn w-full text-left px-3 py-1.5 rounded-full hover:bg-white/5 text-[13px]">▸ Aktivitas &amp; Simulasi</button>
+      <button data-sec="balance" class="navbtn w-full text-left px-3 py-1.5 rounded-full hover:bg-white/5 text-[13px]">▸ Balance &amp; Accounting</button>
+      <div class="px-2 pt-3 text-[10px] font-bold text-slate-500 uppercase tracking-wider">System</div>
+      <button data-sec="quiz" class="navbtn w-full text-left px-3 py-2 rounded-full hover:bg-white/5 font-medium flex items-center gap-2.5">🧠 Quiz <span class="ml-auto chip bg-rose-500 text-white">48</span></button>
+      <button data-sec="sim" class="navbtn w-full text-left px-3 py-2 rounded-full hover:bg-white/5 font-medium flex items-center gap-2.5">🧮 Kalkulator</button>
+      <button data-sec="glosarium" class="navbtn w-full text-left px-3 py-2 rounded-full hover:bg-white/5 font-medium flex items-center gap-2.5">📖 Glosarium</button>
+      <button data-sec="chatbot" class="navbtn w-full text-left px-3 py-2 rounded-full hover:bg-white/5 font-medium flex items-center gap-2.5">💬 Chatbot <span class="ml-auto w-2 h-2 rounded-full bg-rose-500"></span></button>
     </nav>
-    <div class="p-3 text-[10px] text-slate-400 border-t border-slate-200">Sumber: Arrangement Architecture – Loans (Temenos, 441 slide)</div>
+    <div class="p-3 border-t border-white/10 flex items-center gap-2.5">
+      <div class="w-8 h-8 rounded-full hero-grad flex items-center justify-center text-white text-xs font-bold">ES</div>
+      <div class="min-w-0"><div class="text-xs font-semibold text-white truncate">Edvan Santana</div><div class="text-[10px] text-slate-400 truncate">AA Lending learner</div></div>
+    </div>
   </aside>
+
+  <!-- MAIN -->
 
   <!-- MAIN -->
   <main class="flex-1 overflow-y-auto" id="main"></main>
@@ -639,49 +704,150 @@ views.ivq = ()=>`
   </details>`).join('')}
 </div>`;
 
-views.home = ()=>`
-<div class="p-8 max-w-4xl mx-auto">
-  <div class="rounded-2xl bg-gradient-to-br from-blue-900 to-indigo-700 text-white p-8 mb-6">
-    <div class="text-xs uppercase tracking-widest text-blue-200 mb-2">Temenos Transact · Arrangement Architecture</div>
-    <h1 class="text-3xl font-extrabold mb-2">Knowledge Management — AA Lending</h1>
-    <p class="text-blue-100 text-sm leading-relaxed">Belajar mandiri AA Lending end-to-end (dari pengenalan CBS sampai payoff &amp; testing) berdasarkan dokumen kursus <b>AA-Lending</b>, diperdalam dengan materi resmi <b>Arrangement Architecture – Loans</b> (Temenos, 441 slide, R10.3).</p>
-    <div class="flex gap-3 mt-5 flex-wrap">
-      <button onclick="go('m1')" class="bg-white text-blue-900 font-semibold text-sm px-4 py-2 rounded-lg hover:bg-blue-50">Mulai Kursus Utama →</button>
-      <button onclick="go('chatbot')" class="bg-blue-800/60 border border-blue-400/40 font-semibold text-sm px-4 py-2 rounded-lg hover:bg-blue-800">💬 Tanya Chatbot</button>
-      <button onclick="go('quiz')" class="bg-blue-800/60 border border-blue-400/40 font-semibold text-sm px-4 py-2 rounded-lg hover:bg-blue-800">🧠 Uji Pemahaman</button>
+views.home = ()=>{
+  const spark = (pts, down=false)=>`<svg class="spark w-24 h-8" viewBox="0 0 100 32" fill="none"><path d="M0 ${down?'8':'26'} ${pts.map((p,i)=>`L${(i+1)*(100/pts.length)} ${p}`).join(' ')}" stroke="${down?'#fb7185':'#ff5e5b'}" stroke-width="2.2" stroke-linecap="round"/><path d="M0 ${down?'8':'26'} ${pts.map((p,i)=>`L${(i+1)*(100/pts.length)} ${p}`).join(' ')} L100 32 L0 32 Z" fill="url(#sg${down?'d':'u'})" opacity=".18"/></svg>`;
+  const stat = (icon,trend,up,val,label,sub,pts)=>`
+  <div class="glass rounded-2xl p-5 relative overflow-hidden">
+    <div class="flex items-start justify-between">
+      <div class="w-9 h-9 rounded-xl bg-white/10 flex items-center justify-center text-base">${icon}</div>
+      <span class="chip ${up?'bg-emerald-500/15 text-emerald-400':'bg-rose-500/15 text-rose-300'}">${trend}</span>
     </div>
-  </div>
-  <div class="mb-6">
-    <div class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Prioritas 1 — Kursus Utama: Siklus Hidup Pinjaman</div>
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-      ${[['m1','1. Pengenalan','CBS, Temenos, AA, product vs arrangement'],['m2','2. Hierarki AA','Line → Group → Product → Property → Condition'],['m3','3. Konfigurasi Produk','10 langkah, negotiation, ARR.LINK, proof & publish'],['m4','4. Loan Booking','New arrangement, agreement vs effective date'],['m5','5. Disbursement','Full/partial/multiple, settlement account, GL'],['m6','6. Interest & COB','Accrual harian, day count, fixed vs floating'],['m7','7. Repayment & EMI','Schedule, due, alokasi pembayaran'],['m8','8. Overdue','DPD, penalty, delinquency, collection'],['m9','9. Rescheduling','EMI, tenure, moratorium, top-up'],['m10','10. Payoff & Closure','Prepayment, foreclosure, settlement akhir']].map(([s,t,d])=>`
-      <button onclick="go('${s}')" class="bg-white rounded-xl border border-slate-200 p-4 text-left hover:border-blue-400 hover:shadow transition">
-        <div class="font-bold text-blue-900 text-sm">${t}</div>
-        <div class="text-xs text-slate-500 mt-1">${d}</div>
-      </button>`).join('')}
+    <div class="text-3xl font-extrabold text-white mt-4">${val}</div>
+    <div class="flex items-end justify-between gap-2 mt-1">
+      <div><div class="text-xs text-slate-400">${label}</div><div class="text-[10px] text-slate-500 mt-0.5">${sub}</div></div>
+      ${spark(pts,!up)}
     </div>
-  </div>
-  <div class="mb-6">
-    <div class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Prioritas 2 — AA Lanjutan</div>
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-      ${[['m11','11. Accounting','GL, STMT.ENTRY vs CATEG.ENTRY per tahap'],['m13','12. Limits & Collateral','Limit hierarchy, LTV, release'],['m14','13. Konfigurasi Lanjutan','Tracking, ARR.LINK, inheritance'],['m15','14. E2E Testing','Fase test, SQL, checklist COB/UAT'],['ivq','🎤 Interview','185 pertanyaan + jawaban'],['quiz','🧠 Quiz','Latihan interaktif berskor']].map(([s,t,d])=>`
-      <button onclick="go('${s}')" class="bg-white rounded-xl border border-slate-200 p-4 text-left hover:border-indigo-400 hover:shadow transition">
-        <div class="font-bold text-indigo-900 text-sm">${t}</div>
-        <div class="text-xs text-slate-500 mt-1">${d}</div>
-      </button>`).join('')}
+  </div>`;
+  const donutSegs = [['Kursus Utama',14,'#ff5e5b'],['AA Lanjutan',4,'#fb923c'],['Deep Dive',6,'#a78bfa'],['Interaktif',4,'#34d399']];
+  const total = 28; let acc=0;
+  const segPaths = donutSegs.map(([n,v,c])=>{
+    const frac=v/total, a0=acc*Math.PI*2- Math.PI/2, a1=(acc+frac)*Math.PI*2 - Math.PI/2;
+    acc+=frac;
+    const large = frac>0.5?1:0;
+    return `<path d="M60 60 L${60+48*Math.cos(a0)} ${60+48*Math.sin(a0)} A48 48 0 ${large} 1 ${60+48*Math.cos(a1)} ${60+48*Math.sin(a1)}" fill="none" stroke="${c}" stroke-width="12" stroke-linecap="round"/>`;
+  }).join('');
+  return `
+  <div class="p-8 max-w-5xl mx-auto space-y-5">
+    <!-- HEADER -->
+    <div class="flex items-start justify-between gap-4 flex-wrap">
+      <div>
+        <h1 class="text-3xl font-extrabold text-white">Good afternoon, Edvan</h1>
+        <p class="text-sm text-slate-400 mt-1">Senin, 9 November · 7 modul siap dipelajari</p>
+      </div>
+      <div class="flex gap-2">
+        <button onclick="go('ivq')" class="glass glass-hover text-sm px-4 py-2 rounded-full font-medium text-slate-300">🕒 Bank interview</button>
+        <button onclick="go('m1')" class="text-sm px-4 py-2 rounded-full font-semibold bg-white text-slate-900 hover:bg-slate-200">＋ Mulai kursus</button>
+      </div>
     </div>
-  </div>
-  <div>
-    <div class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Prioritas 3 — AA Deep Dive: Loans (materi resmi Temenos T3TAAL)</div>
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-      ${[['konsep','Konsep Dasar AA','Dependensi, overview loan, day basis'],['propclass','Property Class Explorer','24 komponen lending + workshop'],['product','Membangun Produk','Line→Group→Designer, proof/publish'],['activities','Aktivitas & Simulasi','Reverse/replay, renewal, settlement'],['balance','Balance & Accounting','Balance type, suspension, allocation'],['glosarium','Glosarium','32 istilah AA Loan']].map(([s,t,d])=>`
-      <button onclick="go('${s}')" class="bg-slate-50 rounded-xl border border-slate-200 p-4 text-left hover:border-slate-400 transition">
-        <div class="font-bold text-slate-800 text-sm">${t}</div>
-        <div class="text-xs text-slate-500 mt-1">${d}</div>
-      </button>`).join('')}
+    <!-- HERO ROW -->
+    <div class="grid grid-cols-1 lg:grid-cols-5 gap-5">
+      <!-- Sprint card -->
+      <div class="hero-grad rounded-3xl p-7 lg:col-span-3 text-white relative overflow-hidden">
+        <div class="absolute -right-20 -top-24 w-72 h-72 rounded-full bg-white/15 blur-2xl"></div>
+        <div class="relative">
+          <div class="inline-flex items-center gap-2 text-[11px] font-semibold bg-white/20 rounded-full px-3 py-1">✦ Kursus AA Lending · 4 modul selesai</div>
+          <h2 class="text-2xl font-extrabold mt-4 leading-snug">Knowledge-mu sedang <span class="underline decoration-wavy decoration-2 underline-offset-4">on a roll</span> minggu ini</h2>
+          <p class="text-white/80 text-sm mt-2 max-w-md">68% materi kursus utama sudah terkaji dan tiga modul lanjutan siap dibuka: Accounting, Limits &amp; Collateral, dan E2E Testing.</p>
+          <div class="grid grid-cols-3 divide-x divide-white/25 mt-6 text-center">
+            <div><div class="text-2xl font-extrabold">14</div><div class="text-[11px] text-white/70 uppercase tracking-wide">modul kursus</div></div>
+            <div><div class="text-2xl font-extrabold">48</div><div class="text-[11px] text-white/70 uppercase tracking-wide">soal quiz</div></div>
+            <div><div class="text-2xl font-extrabold">69</div><div class="text-[11px] text-white/70 uppercase tracking-wide">topik chatbot</div></div>
+          </div>
+          <div class="flex gap-3 mt-7">
+            <button onclick="go('m11')" class="text-sm font-semibold bg-white text-rose-600 px-4 py-2 rounded-full hover:bg-rose-50">Lanjut belajar ↗</button>
+            <button onclick="go('chatbot')" class="text-sm font-medium border border-white/40 px-4 py-2 rounded-full hover:bg-white/15">＋ Tanya chatbot</button>
+          </div>
+        </div>
+        <!-- progress ring -->
+        <div class="absolute right-8 bottom-8 hidden md:block">
+          <svg width="120" height="120" viewBox="0 0 120 120">
+            <circle cx="60" cy="60" r="48" class="ring-track" fill="none" stroke-width="12"/>
+            <circle cx="60" cy="60" r="48" fill="none" stroke="white" stroke-width="12" stroke-linecap="round" stroke-dasharray="${2*Math.PI*48*0.68} ${2*Math.PI*48}" transform="rotate(-90 60 60)"/>
+            <text x="60" y="66" text-anchor="middle" fill="white" font-size="24" font-weight="800" font-family="Inter">68%</text>
+          </svg>
+        </div>
+      </div>
+      <!-- Calendar card -->
+      <div class="glass rounded-3xl p-6 lg:col-span-2">
+        <div class="flex items-start justify-between">
+          <div><div class="text-4xl font-extrabold text-white leading-none">09</div><div class="text-xs text-slate-400 mt-1">Senin · November 2026</div></div>
+          <span class="chip bg-rose-500/15 text-rose-300">2 agenda</span>
+        </div>
+        <div class="flex gap-1.5 mt-4 text-[10px] text-slate-500">
+          ${['S','S','R','K','J','S','M'].map((d,i)=>`<div class="flex-1 text-center">${d}</div>`).join('')}
+        </div>
+        <div class="flex gap-1.5 mt-1">
+          ${[9,10,11,12,13,14,15].map(d=>d===9?`<div class="flex-1 hero-grad rounded-lg h-8 flex items-center justify-center text-white text-xs font-bold">${d}</div>`:`<div class="flex-1 rounded-lg h-8 flex items-center justify-center text-slate-400 text-xs">${d}</div>`).join('')}
+        </div>
+        <div class="mt-5 space-y-2.5">
+          <div class="glass rounded-xl p-3 border-l-2 border-rose-400">
+            <div class="flex justify-between items-center"><span class="text-xs font-bold text-white">09:30 · Lanjut Modul 5</span><span class="chip bg-rose-500 text-white">Next</span></div>
+            <div class="text-[11px] text-slate-400 mt-1">Disbursement — full/partial/multiple</div>
+          </div>
+          <div class="glass rounded-xl p-3 border-l-2 border-white/20">
+            <div class="text-xs font-bold text-white">12:45 · Review quiz</div>
+            <div class="text-[11px] text-slate-400 mt-1">48 soal · target skor 80%</div>
+          </div>
+        </div>
+      </div>
     </div>
-  </div>
-</div>`;
+    <!-- STATS ROW -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+      ${stat('👥','+12%',true,'128','Pembelajar aktif','dari tim & komunitas AA',[26,22,24,18,20,14,16,12,10,14,8,6])}
+      ${stat('🧩','+8%',true,'24','Property class','di Explorer + workshop',[24,20,22,16,18,14,12,14,10,12,8,10])}
+      ${stat('💵','-5%',false,'48','Soal quiz','6 baru dari kursus AA-Lending',[8,10,6,12,14,10,16,14,18,20,24,26])}
+      ${stat('🖥️','+0.4%',true,'99.9%','Chatbot uptime','69 topik siap jawab',[18,16,20,14,16,12,14,10,8,6,4,4])}
+    </div>
+    <!-- QUICK ACTIONS -->
+    <div>
+      <div class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3">Quick actions</div>
+      <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+        ${[['m1','📖','Buka kursus','Modul 1'],['quiz','🧠','Kerjakan quiz','48 soal'],['chatbot','💬','Tanya chatbot','69 topik'],['sim','🧮','Simulasi EMI','annuity/linear'],['propclass','🧩','Explorer','24 property'],['glosarium','📖','Glosarium','32 istilah']].map(([s,i,t,d])=>`
+        <button onclick="go('${s}')" class="glass glass-hover rounded-2xl p-4 text-left">
+          <div class="text-lg">${i}</div>
+          <div class="text-xs font-semibold text-white mt-2">${t}</div>
+          <div class="text-[10px] text-slate-400 mt-0.5">${d}</div>
+        </button>`).join('')}
+      </div>
+    </div>
+    <!-- CHARTS ROW -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
+      <div class="glass rounded-3xl p-6">
+        <div class="flex items-center justify-between">
+          <div class="font-bold text-white">Progres Belajar</div>
+          <div class="flex gap-1 text-[11px]">
+            <span class="chip bg-white/10 text-slate-300">3 minggu</span>
+            <span class="chip bg-rose-500 text-white">6 bulan</span>
+            <span class="chip bg-white/10 text-slate-300">1 tahun</span>
+          </div>
+        </div>
+        <div class="flex gap-4 mt-3 text-[11px] text-slate-400"><span><span class="inline-block w-2 h-2 rounded-full bg-rose-400 mr-1"></span>Modul selesai</span><span><span class="inline-block w-2 h-4 rounded-sm bg-white/20 mr-1 align-middle"></span>Target</span></div>
+        <svg viewBox="0 0 400 150" class="w-full h-40 mt-3">
+          <defs><linearGradient id="area" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ff5e5b" stop-opacity=".45"/><stop offset="1" stop-color="#ff5e5b" stop-opacity="0"/></linearGradient></defs>
+          ${[0,1,2,3].map(i=>`<line x1="0" y1="${30+i*30}" x2="400" y2="${30+i*30}" stroke="rgba(255,255,255,.06)"/>`).join('')}
+          <path d="M0 120 C40 112 60 96 90 100 C120 104 140 78 170 74 C200 70 220 84 250 66 C280 48 300 52 330 40 C360 30 380 34 400 24 L400 150 L0 150 Z" fill="url(#area)"/>
+          <path d="M0 120 C40 112 60 96 90 100 C120 104 140 78 170 74 C200 70 220 84 250 66 C280 48 300 52 330 40 C360 30 380 34 400 24" fill="none" stroke="#ff5e5b" stroke-width="2.5" stroke-linecap="round"/>
+          <path d="M0 128 L400 60" stroke="rgba(255,255,255,.25)" stroke-width="1.5" stroke-dasharray="4 5"/>
+        </svg>
+        <div class="flex justify-between text-[10px] text-slate-500 mt-1">${['Jun','Jul','Agu','Sep','Okt','Nov'].map(m=>`<span>${m}</span>`).join('')}</div>
+      </div>
+      <div class="glass rounded-3xl p-6">
+        <div class="font-bold text-white">Materi per kategori</div>
+        <div class="flex items-center gap-6 mt-4">
+          <svg width="130" height="130" viewBox="0 0 120 120" class="shrink-0">
+            ${segPaths}
+            <text x="60" y="57" text-anchor="middle" fill="white" font-size="20" font-weight="800" font-family="Inter">28</text>
+            <text x="60" y="74" text-anchor="middle" fill="#a1a1aa" font-size="9" font-family="Inter">modul & tools</text>
+          </svg>
+          <div class="space-y-2.5 text-sm flex-1">
+            ${donutSegs.map(([n,v,c])=>`<div class="flex items-center gap-2.5"><span class="w-2.5 h-2.5 rounded-full" style="background:${c}"></span><span class="text-slate-300 text-xs flex-1">${n}</span><span class="text-white font-bold text-xs">${v}</span></div>`).join('')}
+            <div class="text-[10px] text-slate-500 pt-1">Sumber: AA-Lending (15 modul) + Arrangement Architecture – Loans (Temenos)</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>`;
+};
 
 /*PCVIEW*/
 views.propclass = ()=>{
