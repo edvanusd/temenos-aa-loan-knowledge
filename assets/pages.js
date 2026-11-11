@@ -14,56 +14,56 @@
      ======================================================= */
   const LC = [
     { short: 'Booking', title: 'Arrangement dibuat', act: 'LENDING-NEW-ARRANGEMENT', mod: 'm4',
-      desc: 'Customer di-booking dari Product Catalog dengan commitment 100.000. Belum ada dana yang keluar, jadi commitment dicatat sebagai saldo kontingen.',
+      desc: 'Customer di-booking dari Product Catalog dengan commitment Rp100 juta. Belum ada dana yang keluar, jadi commitment dicatat sebagai saldo kontingen.',
       status: 'Aktif, belum ada pencairan',
-      bal: { CURCOMMIT: 100000 },
-      je: [['Dr', 'CURCOMMIT (kontingen)', 100000], ['Cr', 'CURCOMMITBL (penyeimbang)', 100000]] },
+      bal: { CURCOMMIT: 100000000 },
+      je: [['Dr', 'CURCOMMIT (kontingen)', 100000000], ['Cr', 'CURCOMMITBL (penyeimbang)', 100000000]] },
     { short: 'Disbursement', title: 'Dana dicairkan', act: 'LENDING-DISBURSE-COMMITMENT', mod: 'm5',
-      desc: '75.000 dicairkan ke rekening customer. Commitment yang tersedia turun, dan saldo principal berjalan (CURACCOUNT) terbentuk.',
+      desc: 'Rp75 juta dicairkan ke rekening customer. Commitment yang tersedia turun, dan saldo principal berjalan (CURACCOUNT) terbentuk.',
       status: 'Aktif, 75% commitment terpakai',
-      bal: { CURCOMMIT: 25000, CURACCOUNT: 75000 },
-      je: [['Dr', 'CURACCOUNT (pinjaman)', 75000], ['Cr', 'Rekening customer', 75000], ['Dr', 'CURCOMMITBL', 75000], ['Cr', 'CURCOMMIT', 75000]] },
+      bal: { CURCOMMIT: 25000000, CURACCOUNT: 75000000 },
+      je: [['Dr', 'CURACCOUNT (pinjaman)', 75000000], ['Cr', 'Rekening customer', 75000000], ['Dr', 'CURCOMMITBL', 75000000], ['Cr', 'CURCOMMIT', 75000000]] },
     { short: 'Accrual', title: 'Bunga di-accrue saat COB', act: 'COB: interest accrual', mod: 'm6',
-      desc: 'Setiap Close of Business bunga harian dihitung dan diakui sebagai pendapatan walau customer belum membayar. Setelah beberapa hari terkumpul 300.',
+      desc: 'Setiap Close of Business bunga harian dihitung dan diakui sebagai pendapatan walau customer belum membayar. Dengan bunga 8% per tahun, sebulan terkumpul Rp500.000.',
       status: 'Aktif, bunga berjalan',
-      bal: { CURCOMMIT: 25000, CURACCOUNT: 75000, ACCPRINCIPALINT: 300 },
-      je: [['Dr', 'ACCPRINCIPALINT', 300], ['Cr', 'P&L pendapatan bunga', 300]] },
+      bal: { CURCOMMIT: 25000000, CURACCOUNT: 75000000, ACCPRINCIPALINT: 500000 },
+      je: [['Dr', 'ACCPRINCIPALINT', 500000], ['Cr', 'P&L pendapatan bunga', 500000]] },
     { short: 'Make due', title: 'Tagihan jatuh tempo', act: 'COB: Payment Schedule', mod: 'm7',
-      desc: 'Pada tanggal jadwal, bill 1.000 dibuat: 700 principal dari CURACCOUNT dan 300 bunga dari ACCPRINCIPALINT pindah ke saldo DUE.',
+      desc: 'Pada tanggal jadwal, bill Rp2 juta dibuat: Rp1,5 juta principal dari CURACCOUNT dan Rp500.000 bunga dari ACCPRINCIPALINT pindah ke saldo DUE.',
       status: 'Aktif, ada bill jatuh tempo',
-      bal: { CURCOMMIT: 25000, CURACCOUNT: 74300, DUEACCOUNT: 700, DUEPRINCIPALINT: 300 },
-      je: [['Dr', 'DUEACCOUNT', 700], ['Cr', 'CURACCOUNT', 700], ['Dr', 'DUEPRINCIPALINT', 300], ['Cr', 'ACCPRINCIPALINT', 300]] },
+      bal: { CURCOMMIT: 25000000, CURACCOUNT: 73500000, DUEACCOUNT: 1500000, DUEPRINCIPALINT: 500000 },
+      je: [['Dr', 'DUEACCOUNT', 1500000], ['Cr', 'CURACCOUNT', 1500000], ['Dr', 'DUEPRINCIPALINT', 500000], ['Cr', 'ACCPRINCIPALINT', 500000]] },
     { short: 'Overdue', title: 'Bill tidak dibayar, di-age', act: 'LENDING-AGE-OVERDUE', mod: 'm8', risk: true,
       desc: 'Due date terlewat. Property OVERDUE memindahkan saldo DUE ke status aging (di sini OD1); DPD mulai dihitung dan penalty bisa berlaku.',
       status: 'Overdue, DPD berjalan',
-      bal: { CURCOMMIT: 25000, CURACCOUNT: 74300, OD1ACCOUNT: 700, OD1PRINCIPALINT: 300 },
-      je: [['Dr', 'OD1ACCOUNT', 700], ['Cr', 'DUEACCOUNT', 700], ['Dr', 'OD1PRINCIPALINT', 300], ['Cr', 'DUEPRINCIPALINT', 300]] },
-    { short: 'Repayment', title: 'Customer membayar 1.500', act: 'Repayment: Payment Rules', mod: 'm7',
-      desc: 'Payment Rules mengalokasikan dana: bunga overdue dulu, lalu principal overdue, dan sisanya 500 mengurangi principal berjalan.',
+      bal: { CURCOMMIT: 25000000, CURACCOUNT: 73500000, OD1ACCOUNT: 1500000, OD1PRINCIPALINT: 500000 },
+      je: [['Dr', 'OD1ACCOUNT', 1500000], ['Cr', 'DUEACCOUNT', 1500000], ['Dr', 'OD1PRINCIPALINT', 500000], ['Cr', 'DUEPRINCIPALINT', 500000]] },
+    { short: 'Repayment', title: 'Customer membayar Rp3 juta', act: 'Repayment: Payment Rules', mod: 'm7',
+      desc: 'Payment Rules mengalokasikan dana: bunga overdue dulu, lalu principal overdue, dan sisanya Rp1 juta mengurangi principal berjalan.',
       status: 'Aktif, tunggakan lunas',
-      bal: { CURCOMMIT: 25000, CURACCOUNT: 73800 },
-      je: [['Dr', 'Rekening customer', 1500], ['Cr', 'OD1PRINCIPALINT', 300], ['Cr', 'OD1ACCOUNT', 700], ['Cr', 'CURACCOUNT', 500]] },
+      bal: { CURCOMMIT: 25000000, CURACCOUNT: 72500000 },
+      je: [['Dr', 'Rekening customer', 3000000], ['Cr', 'OD1PRINCIPALINT', 500000], ['Cr', 'OD1ACCOUNT', 1500000], ['Cr', 'CURACCOUNT', 1000000]] },
     { short: 'Payoff', title: 'Pelunasan penuh', act: 'LENDING-CALCULATE-PAYOFF', mod: 'm10',
-      desc: 'Payoff disimulasikan untuk mendapat jumlah pelunasan, lalu customer melunasi seluruh principal 73.800. Bunga berjalan diabaikan di ilustrasi ini agar angka tetap sederhana.',
+      desc: 'Payoff disimulasikan untuk mendapat jumlah pelunasan, lalu customer melunasi seluruh principal Rp72,5 juta. Bunga berjalan diabaikan di ilustrasi ini agar angka tetap sederhana.',
       status: 'Lunas, menunggu closure',
-      bal: { CURCOMMIT: 25000 },
-      je: [['Dr', 'Rekening customer', 73800], ['Cr', 'CURACCOUNT', 73800]] },
+      bal: { CURCOMMIT: 25000000 },
+      je: [['Dr', 'Rekening customer', 72500000], ['Cr', 'CURACCOUNT', 72500000]] },
     { short: 'Closure', title: 'Arrangement ditutup', act: 'CLOSURE (tipe BALANCE)', mod: 'm10',
       desc: 'Semua saldo nol, commitment sisa dilepas, dan property CLOSURE menutup arrangement karena Closure Type = BALANCE.',
       status: 'Ditutup',
       bal: {},
-      je: [['Dr', 'CURCOMMITBL', 25000], ['Cr', 'CURCOMMIT', 25000]] },
+      je: [['Dr', 'CURCOMMITBL', 25000000], ['Cr', 'CURCOMMIT', 25000000]] },
   ];
   const BAL_GROUPS = [
-    { title: 'Commitment & principal', max: 100000, items: [['CURCOMMIT', 'commit'], ['CURACCOUNT', 'cur']] },
-    { title: 'Bunga & tagihan', max: 1000, items: [['ACCPRINCIPALINT', 'acc'], ['DUEACCOUNT', 'due'], ['DUEPRINCIPALINT', 'due'], ['OD1ACCOUNT', 'od'], ['OD1PRINCIPALINT', 'od']] },
+    { title: 'Commitment & principal', max: 100000000, label: 'Rp100 juta', items: [['CURCOMMIT', 'commit'], ['CURACCOUNT', 'cur']] },
+    { title: 'Bunga & tagihan', max: 2000000, label: 'Rp2 juta', items: [['ACCPRINCIPALINT', 'acc'], ['DUEACCOUNT', 'due'], ['DUEPRINCIPALINT', 'due'], ['OD1ACCOUNT', 'od'], ['OD1PRINCIPALINT', 'od']] },
   ];
   AA.LC = LC;
 
   function journalHTML(rows, opts = {}) {
     return `<div class="journal" role="table" aria-label="Jurnal">
-      <div class="journal-head" role="row"><span></span><span>Akun / balance</span><span>Debit</span><span>Kredit</span></div>
-      ${rows.map(([s, a, v]) => `<div class="journal-row ${s.toLowerCase()}" role="row"><span class="side">${s}</span><span class="acct">${opts.raw ? a : esc(a)}</span><span class="amt">${s === 'Dr' ? (typeof v === 'number' ? fmt(v) : v) : ''}</span><span class="amt">${s === 'Cr' ? (typeof v === 'number' ? fmt(v) : v) : ''}</span></div>`).join('')}
+      <div class="journal-head" role="row"><span></span><span>Akun / balance</span><span>Debit (Rp)</span><span>Kredit (Rp)</span></div>
+      ${rows.map(([s, a, v]) => { const amt = typeof v === 'number' ? fmt(v) : String(v).replace(/^Rp\s?/, ''); return `<div class="journal-row ${s.toLowerCase()}" role="row"><span class="side">${s}</span><span class="acct">${opts.raw ? a : esc(a)}</span><span class="amt">${s === 'Dr' ? amt : ''}</span><span class="amt">${s === 'Cr' ? amt : ''}</span></div>`; }).join('')}
     </div>`;
   }
   AA.journalHTML = journalHTML;
@@ -89,7 +89,7 @@
       <div class="lc-body">
         <div class="lc-detail" aria-live="polite"></div>
         <div class="lc-balances">
-          ${BAL_GROUPS.map((g) => `<div class="lc-group"><h4>${g.title}<span>skala ${fmt(g.max)}</span></h4>
+          ${BAL_GROUPS.map((g) => `<div class="lc-group"><h4>${g.title}<span>skala ${g.label}</span></h4>
             ${g.items.map(([n, k]) => `<div class="balrow k-${k} zero" data-b="${n}"><span class="bn">${n}</span><span class="bt"><i></i></span><span class="bv">0</span></div>`).join('')}
           </div>`).join('')}
           <div class="lc-status">${icon('flag', 'i-sm')}<span>Status: <b class="lc-st"></b></span></div>
@@ -194,7 +194,7 @@
       return `
       <div class="page">
         <div class="dash-head">
-          <div><h1>${greet}, Edvan</h1><p class="date">${date}</p></div>
+          <div><h1>${greet}${AA.Cloud && AA.Cloud.user ? ', ' + esc(AA.Cloud.firstName()) : ''}</h1><p class="date">${date}</p></div>
           <div class="btn-row">
             <button class="btn btn-line" data-open-palette>${icon('search', 'i-sm')}Cari materi</button>
             <a class="btn" href="#/modul/${next.key}">${allDone ? 'Ulas modul terakhir' : done ? `Lanjutkan Modul ${next.n}` : 'Mulai Modul 1'}</a>
@@ -217,7 +217,7 @@
             ${stat('Skor quiz terbaik', best === null ? 'belum ada' : best + '%', best || 0)}
             ${stat('Jawaban interview dikuasai', `${ivqKnown}/${ivqTotal}`, (ivqKnown / ivqTotal) * 100)}
             ${stat('Istilah dikuasai', `${glKnown}/${glTotal}`, (glKnown / glTotal) * 100)}
-            <p class="small muted">${streak > 1 ? `Kamu belajar ${streak} hari berturut-turut.` : 'Progres tersimpan di browser ini.'}</p>
+            <p class="small muted">${streak > 1 ? `Kamu belajar ${streak} hari berturut-turut.` : (AA.Cloud && AA.Cloud.user ? 'Progres tersimpan di akunmu.' : 'Progres tersimpan di browser ini.')}</p>
           </div>
         </div>
 
@@ -242,7 +242,7 @@
   /* =======================================================
      PEMBACA MODUL
      ======================================================= */
-  const isNumCell = (c) => /^[\s₹$€£Rp]*[−\-+]?[\d][\d.,\s]*(%|\s?(Lakh|Crore|L|Cr|T))?$/i.test(strip(c)) && /\d/.test(c);
+  const isNumCell = (c) => /^[\s₹$€£Rp]*[−\-+]?[\d][\d.,\s]*(%|\s?(juta|miliar|jt|rb|M))?$/i.test(strip(c)) && /\d/.test(c);
   function tableHTML(t, note) {
     const head = t[0], rows = t.slice(1);
     const isJournal = /^entry$/i.test(strip(head[0])) && rows.every((r) => /^(Debit|Credit)\s*[—-]/.test(strip(r[0])));
@@ -301,14 +301,14 @@
     const t = strip(text);
     if (/Daily Interest/i.test(t)) return `<div class="mini" data-mini="daily"><h4>${icon('calc', 'i-sm')}Coba hitung bunga harian</h4>
       <div class="mini-grid">
-        <label class="field"><span>Outstanding principal</span><input class="input" type="number" min="0" value="5000000" data-k="p"></label>
+        <label class="field"><span>Outstanding principal (Rp)</span><input class="input" type="text" inputmode="numeric" data-money value="500.000.000" data-k="p"></label>
         <label class="field"><span>Rate per tahun (%)</span><input class="input" type="number" min="0" step="0.01" value="8.25" data-k="r"></label>
         <label class="field"><span>Basis hari</span><select class="input" data-k="b"><option value="365">365</option><option value="360">360</option><option value="366">366</option></select></label>
       </div><div class="mini-out"></div></div>`;
     if (/LTV/.test(t)) return `<div class="mini" data-mini="ltv"><h4>${icon('calc', 'i-sm')}Coba hitung LTV</h4>
       <div class="mini-grid">
-        <label class="field"><span>Loan amount</span><input class="input" type="number" min="0" value="5000000" data-k="l"></label>
-        <label class="field"><span>Nilai collateral</span><input class="input" type="number" min="1" value="7500000" data-k="c"></label>
+        <label class="field"><span>Loan amount (Rp)</span><input class="input" type="text" inputmode="numeric" data-money value="500.000.000" data-k="l"></label>
+        <label class="field"><span>Nilai collateral (Rp)</span><input class="input" type="text" inputmode="numeric" data-money value="750.000.000" data-k="c"></label>
         <label class="field"><span>Batas LTV bank (%)</span><input class="input" type="number" min="1" value="80" data-k="m"></label>
       </div><div class="mini-out"></div></div>`;
     if (/penalty/i.test(t)) return `<div class="mini"><h4>${icon('alert', 'i-sm')}Lihat efeknya per hari keterlambatan</h4><p class="small">Simulator overdue menghitung penalty, late fee, dan status aging untuk setiap DPD.</p><div style="margin-top:10px"><a class="btn btn-line btn-sm" href="#/overdue">Buka simulator overdue</a></div></div>`;
@@ -317,11 +317,12 @@
   function mountMinis(root) {
     $$('[data-mini]', root).forEach((w) => {
       const out = $('.mini-out', w);
-      const v = (k) => +$(`[data-k="${k}"]`, w).value || 0;
+      const v = (k) => AA.num($(`[data-k="${k}"]`, w).value);
+      AA.bindMoney(w);
       const calc = () => {
         if (w.dataset.mini === 'daily') {
           const d = (v('p') * v('r')) / 100 / v('b');
-          out.innerHTML = `Bunga per hari <b>${fmt(d, 2)}</b>, sebulan 30 hari ≈ <b>${fmt(d * 30, 2)}</b>, setahun ≈ <b>${fmt(d * v('b'), 2)}</b>.`;
+          out.innerHTML = `Bunga per hari <b>${AA.rp(d)}</b>, sebulan 30 hari ≈ <b>${AA.rp(d * 30)}</b>, setahun ≈ <b>${AA.rp(d * v('b'))}</b>.`;
         } else {
           const l = (v('l') / v('c')) * 100, ok = l <= v('m');
           out.innerHTML = `LTV = <b>${fmt(l, 2)}%</b>. ${ok ? `<span style="color:var(--green);font-weight:650">Di bawah batas ${fmt(v('m'))}%, pinjaman memenuhi syarat.</span>` : `<span style="color:var(--red);font-weight:650">Melebihi batas ${fmt(v('m'))}%, perlu tambahan collateral atau loan amount diturunkan.</span>`}`;
@@ -391,6 +392,7 @@
         const was = !!Store.data.done[m.key];
         if (was) delete Store.data.done[m.key]; else Store.data.done[m.key] = Date.now();
         Store.save();
+        AA.sync({ t: 'module', key: m.key, done: !was });
         AA.toast(was ? 'Tanda selesai dihapus' : `Modul ${m.n} ditandai selesai`);
         const y = window.scrollY; AA.rerender(); window.scrollTo(0, y);
       });
@@ -480,7 +482,7 @@
             <h3 style="font-size:16px;margin-bottom:4px">Bandingkan bunga antar basis</h3>
             <p class="small muted" style="margin-bottom:16px">Numerator 360 menghitung bulan sebagai 30 hari, 366 menghitung hari aktual. Denominator 366 memakai panjang tahun aktual. Penyederhanaan untuk belajar.</p>
             <div class="grid-2" style="grid-template-columns:repeat(4,1fr);gap:12px">
-              <label class="field"><span>Principal</span><input class="input" type="number" value="100000000" min="0" data-k="p"></label>
+              <label class="field"><span>Principal (Rp)</span><input class="input" type="text" inputmode="numeric" data-money value="100.000.000" data-k="p"></label>
               <label class="field"><span>Rate (%)</span><input class="input" type="number" value="8.25" step="0.01" min="0" data-k="r"></label>
               <label class="field"><span>Dari tanggal</span><input class="input" type="date" value="2026-01-31" data-k="a"></label>
               <label class="field"><span>Sampai tanggal</span><input class="input" type="date" value="2026-03-31" data-k="b"></label>
@@ -507,7 +509,7 @@
       const w = $('#dbCalc', root);
       const calc = () => {
         const g = (k) => $(`[data-k="${k}"]`, w).value;
-        const P = +g('p') || 0, R = (+g('r') || 0) / 100;
+        const P = AA.num(g('p')), R = (+g('r') || 0) / 100;
         const a = new Date(g('a') + 'T00:00:00'), b = new Date(g('b') + 'T00:00:00');
         if (!(b > a)) { $('.db-out', w).innerHTML = '<p class="small" style="color:var(--red)">Tanggal akhir harus setelah tanggal awal.</p>'; return; }
         const rows = DAY_BASIS.filter((x) => x[3]).map(([k, nd, , conv]) => {
@@ -517,9 +519,10 @@
           return { k, nd, days, dv, i: (P * R * days) / dv };
         });
         const max = Math.max(...rows.map((x) => x.i)), min = Math.min(...rows.map((x) => x.i));
-        $('.db-out', w).innerHTML = tableHTML([['Key', 'Basis', 'Hari dihitung', 'Pembagi', 'Bunga'], ...rows.map((x) => [`<span class="tag">${x.k}</span>`, x.nd, String(x.days), String(x.dv), `<span style="${x.i === max ? 'color:var(--red)' : x.i === min ? 'color:var(--green)' : ''}">${fmt(x.i, 2)}</span>`])]) +
-          `<p class="tbl-note">Selisih tertinggi dan terendah: <b>${fmt(max - min, 2)}</b>. Coba rentang yang melewati Februari atau tanggal 31 untuk melihat perbedaan 30/360 dan aktual.</p>`;
+        $('.db-out', w).innerHTML = tableHTML([['Key', 'Basis', 'Hari dihitung', 'Pembagi', 'Bunga'], ...rows.map((x) => [`<span class="tag">${x.k}</span>`, x.nd, String(x.days), String(x.dv), `<span style="${x.i === max ? 'color:var(--red)' : x.i === min ? 'color:var(--green)' : ''}">${AA.rp(x.i)}</span>`])]) +
+          `<p class="tbl-note">Selisih tertinggi dan terendah: <b>${AA.rp(max - min)}</b>. Coba rentang yang melewati Februari atau tanggal 31 untuk melihat perbedaan 30/360 dan aktual.</p>`;
       };
+      AA.bindMoney(w);
       w.addEventListener('input', calc); calc();
       return off;
     },
@@ -561,9 +564,9 @@
           <div class="section-head"><h2>Membaca Id product condition</h2><p>Arahkan atau ketuk bagian Id</p></div>
           <div class="panel pad" id="idAnat">
             <div class="chips" style="gap:0;font-size:20px">
-              <button class="tag" data-part="0" style="font-size:18px;padding:6px 10px;border-radius:6px 0 0 6px">FIXED.RATE</button><span class="tag" style="font-size:18px;padding:6px 4px;border-radius:0;border-left:0;border-right:0">-</span><button class="tag" data-part="1" style="font-size:18px;padding:6px 10px;border-radius:0">USD</button><span class="tag" style="font-size:18px;padding:6px 4px;border-radius:0;border-left:0;border-right:0">-</span><button class="tag" data-part="2" style="font-size:18px;padding:6px 10px;border-radius:0 6px 6px 0">20100101</button>
+              <button class="tag" data-part="0" style="font-size:18px;padding:6px 10px;border-radius:6px 0 0 6px">FIXED.RATE</button><span class="tag" style="font-size:18px;padding:6px 4px;border-radius:0;border-left:0;border-right:0">-</span><button class="tag" data-part="1" style="font-size:18px;padding:6px 10px;border-radius:0">IDR</button><span class="tag" style="font-size:18px;padding:6px 4px;border-radius:0;border-left:0;border-right:0">-</span><button class="tag" data-part="2" style="font-size:18px;padding:6px 10px;border-radius:0 6px 6px 0">20100101</button>
             </div>
-            <p class="id-exp" style="margin-top:14px;color:var(--ink-2)">Id product condition terdiri dari nama kondisi, currency, dan effective date. Contoh lain: <span class="tag">FIXED.INTEREST-GBP-20100101</span>.</p>
+            <p class="id-exp" style="margin-top:14px;color:var(--ink-2)">Id product condition terdiri dari nama kondisi, currency, dan effective date. Contoh lain: <span class="tag">FIXED.INTEREST-USD-20100101</span>.</p>
           </div>
           <div class="content" style="margin-top:14px"><p>Property adalah named instance dari Property Class. Beberapa property dari kelas yang sama boleh dipakai jika Property Class mengizinkan (MULTIPLE). Detail level produk tidak terlihat di arrangement bila PRODUCT.ONLY.</p></div>
         </section>
@@ -591,7 +594,7 @@
       </div>`;
     },
     mount(r, root) {
-      const parts = ['<b>FIXED.RATE</b> adalah nama product condition, sama dengan nama yang kamu buat di AA.PRD.DES.INTEREST.', '<b>USD</b> adalah currency. Kondisi untuk property class bertipe CCY harus dibuat per currency.', '<b>20100101</b> adalah effective date. Kondisi baru dengan tanggal lebih baru berlaku mulai tanggal itu (DATED).'];
+      const parts = ['<b>FIXED.RATE</b> adalah nama product condition, sama dengan nama yang kamu buat di AA.PRD.DES.INTEREST.', '<b>IDR</b> adalah currency. Kondisi untuk property class bertipe CCY harus dibuat per currency, mis. IDR dan USD.', '<b>20100101</b> adalah effective date. Kondisi baru dengan tanggal lebih baru berlaku mulai tanggal itu (DATED).'];
       $$('#idAnat [data-part]', root).forEach((b) => {
         const f = () => { $$('#idAnat [data-part]', root).forEach((x) => x.classList.toggle('tag-blue', x === b)); $('#idAnat .id-exp', root).innerHTML = parts[+b.dataset.part]; };
         b.addEventListener('mouseenter', f); b.addEventListener('focus', f); b.addEventListener('click', f);
@@ -721,7 +724,7 @@
     ['Property Class', 'AA.PROPERTY.CLASS', 'Kategori fungsi bisnis: CUSTOMER, TERM.AMOUNT, INTEREST, PAYMENT.RULES, ACCOUNTING, CHARGE, LIMIT. Product Line menentukan kelas mana yang mandatory atau opsional.', 'CUSTOMER, TERM.AMOUNT, INTEREST, PAYMENT.RULES, ACCOUNTING, CHARGE'],
     ['Property', 'AA.PROPERTY', 'Implementasi dari Property Class. INTEREST bisa menjadi Principal Interest atau Penalty Interest; CHARGE bisa menjadi Processing Fee atau Late Payment Charge.', 'Customer, Commitment, Principal Interest, Repayment, Accounting, Processing Fee'],
     ['Product Condition', 'AA.PRD.DES.<PROPERTY.CLASS>', 'Menyimpan aturan default property. Default disalin ke arrangement customer saat booking. Bisa lebih dari satu dengan periode efektif berbeda.', 'Interest 8,5% fixed basis 365, tenor 20 tahun, EMI bulanan, fee 1%'],
-    ['Arrangement', 'AA.ARRANGEMENT', 'Kontrak live customer. Setelah di-authorise, activity disbursement, accrual, repayment, dan payoff berjalan terhadapnya.', 'Rakesh, Home Loan ₹50.00.000, 8,25%, 15 tahun'],
+    ['Arrangement', 'AA.ARRANGEMENT', 'Kontrak live customer. Setelah di-authorise, activity disbursement, accrual, repayment, dan payoff berjalan terhadapnya.', 'Rakesh, Home Loan Rp500.000.000, 8,25%, 15 tahun'],
   ];
   const STAGES = [
     ['Designing', 'Tanpa efek ke sistem live', 'Produk disusun di AA.PRODUCT.DESIGNER: semua property mandatory ditambah opsional pilihan, tiap property dengan product condition-nya. Tab CALCULATION.SOURCE menentukan property kalkulasi dan source balance, mis. PRINCIPALINT dari DR.DAILY CURACCOUNT.'],
@@ -812,10 +815,10 @@
           <div class="rr" id="rr">
             <div class="rr-stage"><div class="rr-line"><div class="rr-axis"></div></div></div>
             <div class="rr-foot">
-              <div class="rr-pos">Posisi commitment<b>450T</b></div>
+              <div class="rr-pos">Posisi commitment<b>Rp450 jt</b></div>
               <div class="btn-row">
                 <button class="btn btn-line btn-sm" data-rr="reset">${icon('reset', 'i-sm')}Posisi awal</button>
-                <button class="btn btn-sm" data-rr="run">${icon('play', 'i-sm i-fill')}Sisipkan +150T tanggal 15 Jan</button>
+                <button class="btn btn-sm" data-rr="run">${icon('play', 'i-sm i-fill')}Sisipkan +Rp150 jt tanggal 15 Jan</button>
               </div>
             </div>
             <div class="rr-log" aria-live="polite">Tiga activity tercatat. Sisipkan transaksi back-valued untuk melihat sistem membalik lalu memutar ulang.</div>
@@ -847,10 +850,10 @@
         let run = 0;
         list.slice().sort((a, b) => a.day - b.day).forEach((t) => {
           run += t.v;
-          line.insertAdjacentHTML('beforeend', `<div class="rr-node${t.ins ? ' inserted hidden' : ''}" style="left:${X(t.day)}" data-day="${t.day}"><span class="amt${t.v < 0 ? ' neg' : ''}">${t.v > 0 ? '+' : '−'}${Math.abs(t.v)}T</span><span class="dot"></span><span class="d">${t.d}</span><span class="run">= ${run}T</span></div>`);
+          line.insertAdjacentHTML('beforeend', `<div class="rr-node${t.ins ? ' inserted hidden' : ''}" style="left:${X(t.day)}" data-day="${t.day}"><span class="amt${t.v < 0 ? ' neg' : ''}">${t.v > 0 ? '+' : '−'}Rp${Math.abs(t.v)} jt</span><span class="dot"></span><span class="d">${t.d}</span><span class="run">= Rp${run} jt</span></div>`);
         });
       }
-      function reset() { timers.forEach(clearTimeout); timers = []; draw(base); pos.textContent = '450T'; log.textContent = 'Tiga activity tercatat. Sisipkan transaksi back-valued untuk melihat sistem membalik lalu memutar ulang.'; $('[data-rr="run"]', rr).disabled = false; }
+      function reset() { timers.forEach(clearTimeout); timers = []; draw(base); pos.textContent = 'Rp450 jt'; log.textContent = 'Tiga activity tercatat. Sisipkan transaksi back-valued untuk melihat sistem membalik lalu memutar ulang.'; $('[data-rr="run"]', rr).disabled = false; }
       function run() {
         reset(); $('[data-rr="run"]', rr).disabled = true;
         draw([...base, ins]);
@@ -859,11 +862,11 @@
         const say = (s) => { lines.push(s); log.innerHTML = lines.join('<br>'); };
         let bal = 450;
         say('Hari ini 20 Feb. Activity back-valued 15 Jan diterima.');
-        later(() => { node(46).classList.add('reversed'); bal += 100; pos.textContent = bal + 'T'; say('REVERSE 15 Feb −100T → posisi 550T'); }, 900);
-        later(() => { node(31).classList.add('reversed'); bal -= 50; pos.textContent = bal + 'T'; say('REVERSE 31 Jan +50T → posisi 500T'); }, 1800);
-        later(() => { node(15).classList.remove('hidden'); node(15).classList.add('pulse'); bal += 150; pos.textContent = bal + 'T'; say('INSERT 15 Jan +150T → posisi 650T'); }, 2800);
-        later(() => { const n = node(31); n.classList.remove('reversed'); n.classList.add('pulse'); bal += 50; pos.textContent = bal + 'T'; say('REPLAY 31 Jan +50T → posisi 700T'); }, 3800);
-        later(() => { const n = node(46); n.classList.remove('reversed'); n.classList.add('pulse'); bal -= 100; pos.textContent = bal + 'T'; say('REPLAY 15 Feb −100T → posisi akhir 600T. Accounting dibuat untuk reverse maupun replay.'); $('[data-rr="run"]', rr).disabled = false; }, 4800);
+        later(() => { node(46).classList.add('reversed'); bal += 100; pos.textContent = 'Rp' + bal + ' jt'; say('REVERSE 15 Feb −Rp100 jt → posisi Rp550 jt'); }, 900);
+        later(() => { node(31).classList.add('reversed'); bal -= 50; pos.textContent = 'Rp' + bal + ' jt'; say('REVERSE 31 Jan +Rp50 jt → posisi Rp500 jt'); }, 1800);
+        later(() => { node(15).classList.remove('hidden'); node(15).classList.add('pulse'); bal += 150; pos.textContent = 'Rp' + bal + ' jt'; say('INSERT 15 Jan +Rp150 jt → posisi Rp650 jt'); }, 2800);
+        later(() => { const n = node(31); n.classList.remove('reversed'); n.classList.add('pulse'); bal += 50; pos.textContent = 'Rp' + bal + ' jt'; say('REPLAY 31 Jan +Rp50 jt → posisi Rp700 jt'); }, 3800);
+        later(() => { const n = node(46); n.classList.remove('reversed'); n.classList.add('pulse'); bal -= 100; pos.textContent = 'Rp' + bal + ' jt'; say('REPLAY 15 Feb −Rp100 jt → posisi akhir Rp600 jt. Accounting dibuat untuk reverse maupun replay.'); $('[data-rr="run"]', rr).disabled = false; }, 4800);
       }
       rr.addEventListener('click', (e) => { const b = e.target.closest('[data-rr]'); if (!b) return; b.dataset.rr === 'run' ? run() : reset(); });
       reset();
