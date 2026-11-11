@@ -224,6 +224,16 @@
       if (error) throw error;
       return data;
     },
+    async setRole(userId, role) {
+      const { error } = await this.client.rpc('set_user_role', { p_user_id: userId, p_role: role });
+      if (error) throw error;
+      if (userId === this.user.id && this.profile) this.profile.role = role;
+    },
+    async roleChanges(limit = 30) {
+      const { data, error } = await this.client.from('role_changes').select('user_id,old_role,new_role,changed_by,created_at').order('created_at', { ascending: false }).limit(limit);
+      if (error) throw error;
+      return data;
+    },
     async learnerDetail(id) {
       const c = this.client;
       const [sum, mp, qa, le] = await Promise.all([
@@ -252,6 +262,9 @@
         [/same.*password|different from the old/i, 'Password baru harus berbeda dari password lama.'],
         [/failed to fetch|network|load failed/i, 'Tidak bisa terhubung ke server. Periksa koneksi internet lalu coba lagi.'],
       ];
+      // Pesan dari fungsi database (sudah berbahasa Indonesia)
+      if (/^(Hanya admin|Minimal harus ada satu admin|Peran tidak dikenal|Peserta tidak ditemukan)/.test(m)) return m;
+      if (/set_user_role|role_changes/.test(m) && /could not find|does not exist|schema cache/i.test(m)) return 'Fitur kelola peran belum aktif di database. Jalankan supabase/002_kelola_peran.sql di Supabase SQL Editor.';
       for (const [re, t] of map) if (re.test(m)) return t;
       return m ? `Terjadi kesalahan: ${m}` : 'Terjadi kesalahan. Coba lagi.';
     },

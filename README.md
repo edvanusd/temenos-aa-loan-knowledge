@@ -23,6 +23,7 @@ output/
     account.js      halaman masuk, daftar, lupa/reset password, akun & hasil belajar, admin peserta
 supabase/
   schema.sql        tabel, Row Level Security, view ringkasan peserta (jalankan di SQL Editor)
+  002_kelola_peran.sql  tambahan: fungsi set_user_role + log role_changes (untuk database lama)
 ```
 
 Tanpa build step dan tanpa framework — cukup file statis.
@@ -51,9 +52,14 @@ Indeks pencarian (⌘K / Ctrl K) dan asisten dibangun otomatis dari data ini.
    Jangan pernah menaruh secret / service_role key di repo.
 5. **Jadikan akunmu admin** — daftar dulu di website, lalu jalankan di SQL Editor:
    `update public.profiles set role = 'admin' where email = 'email-kamu@domain.com';`
-   Muat ulang website; menu **Admin peserta** muncul di sidebar.
+   Muat ulang website; menu **Admin peserta** dan **Kelola peran** muncul di sidebar.
+6. **Kelola peran dari website** — untuk database yang dibuat sebelum fitur ini, jalankan
+   `supabase/002_kelola_peran.sql` sekali di SQL Editor (instalasi baru: sudah termasuk di `schema.sql`).
+   Admin lalu bisa menjadikan akun lain admin atau peserta lewat menu **Kelola peran**. Fungsi
+   `set_user_role` menolak non-admin, tidak mengizinkan admin terakhir diturunkan, dan setiap
+   perubahan dicatat di tabel `role_changes`.
 
-Tabel: `profiles`, `login_events`, `module_progress`, `quiz_attempts`, `card_progress`, view `learner_summary`.
+Tabel: `profiles`, `login_events`, `module_progress`, `quiz_attempts`, `card_progress`, `role_changes`, view `learner_summary`.
 Peserta hanya bisa membaca/menulis datanya sendiri; admin bisa membaca semua (RLS). Login hanya
 mengatur akses tampilan — file materi tetap file statis publik di GitHub Pages.
 

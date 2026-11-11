@@ -208,6 +208,22 @@
     toastT = setTimeout(() => el.classList.remove('show'), 2200);
   };
 
+  /* ---------- Dialog konfirmasi ---------- */
+  AA.confirm = function ({ title, body, ok = 'Lanjutkan', cancel = 'Batal', danger = false }) {
+    return new Promise((resolve) => {
+      const dlg = document.createElement('dialog');
+      dlg.className = 'dlg';
+      dlg.setAttribute('aria-labelledby', 'dlgT');
+      dlg.innerHTML = `<form method="dialog"><h2 id="dlgT">${esc(title)}</h2><p>${body}</p>
+        <div class="btn-row dlg-actions"><button class="btn btn-line" value="no">${esc(cancel)}</button><button class="btn${danger ? ' btn-danger' : ''}" value="yes">${esc(ok)}</button></div></form>`;
+      document.body.appendChild(dlg);
+      dlg.addEventListener('close', () => { resolve(dlg.returnValue === 'yes'); dlg.remove(); });
+      dlg.addEventListener('click', (e) => { if (e.target === dlg) dlg.close('no'); });
+      dlg.showModal();
+      $('button[value="yes"]', dlg).focus();
+    });
+  };
+
   /* ---------- Navigasi samping ---------- */
   function navLink(href, inner, cur) { return `<a href="${href}"${cur ? ' aria-current="page"' : ''}>${inner}</a>`; }
   AA.renderNav = function (route) {
@@ -235,7 +251,7 @@
       ${AA.Cloud && AA.Cloud.user ? `<div class="nav-group">
         <div class="nav-title"><span>Akun</span></div>
         ${navLink('#/akun', icon('user') + 'Akun & hasil belajar', isCur('akun'))}
-        ${AA.Cloud.isAdmin() ? navLink('#/admin', icon('users') + 'Admin peserta', isCur('admin')) : ''}
+        ${AA.Cloud.isAdmin() ? navLink('#/admin', icon('users') + 'Admin peserta', isCur('admin')) + navLink('#/peran', icon('shield') + 'Kelola peran', isCur('peran')) : ''}
       </div>` : ''}
       <div class="nav-group"><a href="v1.html" class="small">${icon('reset')}Versi lama</a></div>`;
     const nav = $('#nav');

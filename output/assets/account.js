@@ -340,7 +340,7 @@
       return `<div class="page">
         <div class="crumbs"><a href="#/">Beranda</a><span class="sep">/</span><span>Admin</span></div>
         <div class="dash-head"><div><h1 class="page-title">Admin peserta</h1><p class="lede">Semua akun yang terdaftar beserta hasil belajarnya. Data dibaca langsung dari database.</p></div>
-          <div class="btn-row"><button class="btn btn-line" id="admReload">${icon('reset', 'i-sm')}Muat ulang</button><button class="btn" id="admCsv" disabled>${icon('download', 'i-sm')}Unduh CSV</button></div></div>
+          <div class="btn-row"><a class="btn btn-line" href="#/peran">${icon('shield', 'i-sm')}Kelola peran</a><button class="btn btn-line" id="admReload">${icon('reset', 'i-sm')}Muat ulang</button><button class="btn" id="admCsv" disabled>${icon('download', 'i-sm')}Unduh CSV</button></div></div>
         <section class="section" id="admFig"></section>
         <section class="section">
           <div class="section-head"><h2>Peserta</h2><div class="search-wrap" style="min-width:260px">${icon('search')}<input class="input input-search" id="admQ" placeholder="Cari nama atau email" value="${esc(ADM.q)}"></div></div>
@@ -355,6 +355,7 @@
     mount(r, root) {
       if (r.param) return mountDetail(r.param, root);
       const draw = () => {
+        if (!$('#admFig', root)) return;
         const rows = ADM.rows || [];
         const q = ADM.q.toLowerCase();
         const list = rows.filter((x) => !q || (x.full_name + ' ' + x.email).toLowerCase().includes(q));
@@ -394,7 +395,7 @@
         try {
           const [rows, logins] = await Promise.all([C.learners(), C.recentLogins(25)]);
           ADM.rows = rows; ADM.logins = logins; draw();
-        } catch (e) { $('#admTable', root).innerHTML = `<p class="pad" style="color:var(--red)">${esc(C.errText(e))}</p>`; }
+        } catch (e) { if ($('#admTable', root)) $('#admTable', root).innerHTML = `<p class="pad" style="color:var(--red)">${esc(C.errText(e))}</p>`; }
       };
       if (ADM.rows) draw();
       load();
@@ -415,6 +416,7 @@
     const host = $('#admDetail', root);
     try {
       const x = await C.learnerDetail(id);
+      if (!host.isConnected) return;
       if (!x.summary) { host.innerHTML += '<p>Peserta tidak ditemukan.</p>'; return; }
       const s = x.summary;
       const done = {}; x.modules.forEach((m) => { done[m.module_key] = Date.parse(m.completed_at); });
@@ -424,6 +426,7 @@
         <div class="acct-head">
           <span class="avatar avatar-lg" aria-hidden="true">${esc(AA.initials(s.full_name || s.email))}</span>
           <div><h1 class="page-title">${esc(s.full_name || '(tanpa nama)')}</h1><p class="muted">${esc(s.email)} · bergabung ${dateStr(s.created_at)} · terakhir aktif ${ago(lastActive(s))}</p></div>
+          <div class="role-ctl"><span class="small muted">Peran</span>${roleSwitch(s)}</div>
         </div>
         <section class="section">${figures({ mod: s.modules_done || 0, best: s.quiz_best_pct, last: s.quiz_last_pct, att: s.quiz_attempts || 0, iv: s.interview_known || 0, gl: s.glossary_known || 0 })}</section>
         <section class="section"><div class="section-head"><h2>Modul</h2></div>${moduleGrid(done)}</section>
@@ -431,6 +434,110 @@
           <section class="panel" style="overflow:hidden"><div class="pad" style="padding-bottom:12px"><h2 style="font-size:17px">Riwayat quiz</h2></div>${quizTable(quiz)}</section>
           <section class="panel" style="overflow:hidden"><div class="pad" style="padding-bottom:12px"><h2 style="font-size:17px">Riwayat masuk</h2></div>${loginTable(x.logins)}</section>
         </div>`;
+      bindRoleSwitches(host, [s], () => AA.rerender());
     } catch (e) { host.innerHTML += `<p style="color:var(--red)">${esc(C.errText(e))}</p>`; }
   }
+
+  /* ---------- KELOLA PERAN ---------- */
+  const ROLE = { learner: 'Peserta', admin: 'Admin' };
+  const adminCount = (rows) => rows.filter((x) => x.role === 'admin').length;
+  let ROLE_ROWS = [];
+  function roleSwitch(x) {
+    const me = C.user && x.id === C.user.id;
+    const pool = ROLE_ROWS.length ? ROLE_ROWS : ADM.rows || [];
+    const lastAdmin = x.role === 'admin' && pool.length > 0 && adminCount(pool) <= 1;
+    return `<div class="seg role-seg" role="group" aria-label="Peran ${esc(x.full_name || x.email)}">
+      ${['learner', 'admin'].map((r) => `<button type="button" data-role="${r}" data-uid="${x.id}" aria-pressed="${x.role === r}" ${r === 'learner' && lastAdmin ? 'disabled title="Minimal harus ada satu admin"' : ''}>${ROLE[r]}</button>`).join('')}
+    </div>${me ? '<span class="small muted you">kamu</span>' : ''}`;
+  }
+  async function changeRole(x, role) {
+    const me = C.user && x.id === C.user.id;
+    const name = x.full_name || x.email;
+    const ok = await AA.confirm(role === 'admin'
+      ? { title: `Jadikan ${name} admin?`, body: `${esc(name)} akan bisa melihat hasil belajar semua peserta, mengunduh CSV, dan mengubah peran akun lain.`, ok: 'Jadikan admin' }
+      : me
+        ? { title: 'Turunkan dirimu menjadi peserta?', body: 'Kamu akan langsung kehilangan akses ke halaman Admin peserta dan Kelola peran. Hanya admin lain yang bisa mengembalikannya.', ok: 'Ya, jadikan saya peserta', danger: true }
+        : { title: `Ubah ${name} menjadi peserta?`, body: `${esc(name)} tidak bisa lagi membuka halaman Admin peserta dan Kelola peran. Data belajarnya tetap tersimpan.`, ok: 'Jadikan peserta', danger: true });
+    if (!ok) return false;
+    try {
+      await C.setRole(x.id, role);
+      x.role = role;
+      if (ADM.rows) { const r = ADM.rows.find((y) => y.id === x.id); if (r) r.role = role; }
+      AA.toast(`${name} sekarang ${ROLE[role].toLowerCase()}`, 'shield');
+      if (me && role !== 'admin') { location.hash = '#/akun'; return false; }
+      AA.renderNav();
+      return true;
+    } catch (e) { AA.toast(C.errText(e), 'alert'); return false; }
+  }
+  function bindRoleSwitches(host, rows, after) {
+    host.addEventListener('click', async (e) => {
+      const b = e.target.closest('.role-seg button[data-role]');
+      if (!b || b.disabled || b.getAttribute('aria-pressed') === 'true') return;
+      e.stopPropagation();
+      const x = rows.find((r) => r.id === b.dataset.uid);
+      if (!x) return;
+      const seg = b.parentElement; seg.classList.add('busy');
+      const done = await changeRole(x, b.dataset.role);
+      seg.classList.remove('busy');
+      if (done && after) after();
+    });
+  }
+
+  AA.pages.peran = {
+    title: 'Kelola peran',
+    adminOnly: true,
+    render() {
+      return `<div class="page page-narrow" style="max-width:1000px">
+        <div class="crumbs"><a href="#/">Beranda</a><span class="sep">/</span><a href="#/admin">Admin peserta</a><span class="sep">/</span><span>Kelola peran</span></div>
+        <h1 class="page-title">Kelola peran</h1>
+        <p class="lede">Tentukan siapa yang menjadi admin. Perubahan langsung berlaku saat akun itu memuat ulang halaman, dan setiap perubahan dicatat.</p>
+        <dl class="roles-def">
+          <div><dt><span class="tag">Peserta</span></dt><dd>Belajar dan melihat hasil belajarnya sendiri. Peran default untuk akun baru.</dd></div>
+          <div><dt><span class="tag tag-blue">Admin</span></dt><dd>Semua akses peserta, ditambah halaman Admin peserta, unduh CSV, dan kelola peran. Minimal harus ada satu admin.</dd></div>
+        </dl>
+        <section class="section">
+          <div class="section-head">
+            <div class="chips" id="roleFilter"><button class="chip" aria-pressed="true" data-f="">Semua <span class="cnt"></span></button><button class="chip" aria-pressed="false" data-f="admin">Admin <span class="cnt"></span></button><button class="chip" aria-pressed="false" data-f="learner">Peserta <span class="cnt"></span></button></div>
+            <div class="search-wrap" style="min-width:240px">${icon('search')}<input class="input input-search" id="roleQ" placeholder="Cari nama atau email"></div>
+          </div>
+          <div class="panel" style="overflow:hidden" id="roleList"><p class="muted pad">Memuat akun…</p></div>
+        </section>
+        <section class="section">
+          <div class="section-head"><h2>Riwayat perubahan peran</h2><p>30 perubahan terakhir</p></div>
+          <div class="panel" style="overflow:hidden" id="roleLog"><p class="muted pad">Memuat…</p></div>
+        </section>
+      </div>`;
+    },
+    mount(r, root) {
+      let filter = '', q = '';
+      const list = $('#roleList', root);
+      const draw = () => {
+        if (!list.isConnected) return;
+        const rows = ROLE_ROWS;
+        $$('#roleFilter .chip', root).forEach((c) => { const f = c.dataset.f; $('.cnt', c).textContent = f ? rows.filter((x) => x.role === f).length : rows.length; c.setAttribute('aria-pressed', String(f === filter)); });
+        const ql = q.toLowerCase();
+        const show = rows.filter((x) => (!filter || x.role === filter) && (!ql || (x.full_name + ' ' + x.email).toLowerCase().includes(ql)))
+          .sort((a, b) => (a.role === b.role ? (a.full_name || a.email).localeCompare(b.full_name || b.email) : a.role === 'admin' ? -1 : 1));
+        list.innerHTML = show.length ? `<div class="tbl-wrap" style="margin:0;border:0;border-radius:0"><table class="ledger role-table"><thead><tr><th>Akun</th><th>Bergabung</th><th>Terakhir aktif</th><th>Peran</th></tr></thead><tbody>
+          ${show.map((x) => `<tr><td><a href="#/admin/${x.id}" class="who-cell"><b>${esc(x.full_name || '(tanpa nama)')}</b><small>${esc(x.email)}</small></a></td><td>${dateStr(x.created_at)}</td><td>${ago(lastActive(x))}</td><td><div class="role-ctl">${roleSwitch(x)}</div></td></tr>`).join('')}
+          </tbody></table></div>` : `<p class="muted pad">Tidak ada akun yang cocok.</p>`;
+      };
+      const drawLog = (log) => {
+        if (!$('#roleLog', root)) return;
+        const byId = Object.fromEntries(ROLE_ROWS.map((x) => [x.id, x]));
+        const nm = (id) => { const x = byId[id]; return x ? esc(x.full_name || x.email) : '<span class="muted">akun dihapus</span>'; };
+        $('#roleLog', root).innerHTML = log.length ? `<div class="tbl-wrap" style="margin:0;border:0;border-radius:0"><table class="ledger"><thead><tr><th>Waktu</th><th>Akun</th><th>Perubahan</th><th>Oleh</th></tr></thead><tbody>
+          ${log.map((l) => `<tr><td>${dateTime(l.created_at)}</td><td>${nm(l.user_id)}</td><td>${ROLE[l.old_role] || l.old_role} → <b>${ROLE[l.new_role] || l.new_role}</b></td><td>${l.changed_by ? nm(l.changed_by) : '—'}</td></tr>`).join('')}
+          </tbody></table></div>` : `<p class="muted pad">Belum ada perubahan peran yang dicatat dari website.</p>`;
+      };
+      const load = async () => {
+        try { ROLE_ROWS = await C.learners(); draw(); } catch (e) { if (list.isConnected) list.innerHTML = `<p class="pad" style="color:var(--red)">${esc(C.errText(e))}</p>`; return; }
+        try { drawLog(await C.roleChanges(30)); } catch (e) { if ($('#roleLog', root)) $('#roleLog', root).innerHTML = `<p class="pad" style="color:var(--red)">${esc(C.errText(e))}</p>`; }
+      };
+      $('#roleFilter', root).addEventListener('click', (e) => { const c = e.target.closest('.chip'); if (!c) return; filter = c.dataset.f; draw(); });
+      $('#roleQ', root).addEventListener('input', (e) => { q = e.target.value; draw(); });
+      bindRoleSwitches(list, { find: (fn) => ROLE_ROWS.find(fn) }, () => { if (AA.route && AA.route.name === 'peran') load(); });
+      load();
+    },
+  };
 })();
