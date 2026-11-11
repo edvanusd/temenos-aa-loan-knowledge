@@ -21,17 +21,41 @@
   const reduceMotion = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   const hash = (s) => { let h = 5381; for (let i = 0; i < s.length; i++) h = ((h << 5) + h + s.charCodeAt(i)) | 0; return (h >>> 0).toString(36); };
   const shuffle = (a) => { const r = a.slice(); for (let i = r.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [r[i], r[j]] = [r[j], r[i]]; } return r; };
-  Object.assign(AA, { $, $$, esc, strip, fmt, slug, icon, reduceMotion, hash, shuffle });
+  // Rupiah: Rp1.234.567 (tanpa desimal)
+  const rp = (n) => (n < 0 ? '−' : '') + 'Rp' + fmt(Math.round(Math.abs(n)));
+  const num = (s) => +String(s).replace(/[^\d,]/g, '').replace(',', '.') || 0;
+  // Input nominal: format ribuan saat mengetik, mis. 500000000 -> 500.000.000
+  function bindMoney(root) {
+    root.querySelectorAll('input[data-money]').forEach((el) => {
+      if (el.dataset.bound) return; el.dataset.bound = '1';
+      el.addEventListener('input', () => {
+        const fromEnd = el.value.length - (el.selectionStart || 0);
+        const digits = el.value.replace(/\D/g, '').replace(/^0+(?=\d)/, '');
+        el.value = digits ? fmt(+digits) : '';
+        const p = Math.max(0, el.value.length - fromEnd);
+        try { el.setSelectionRange(p, p); } catch (e) { /* abaikan */ }
+      }, true);
+    });
+  }
+  Object.assign(AA, { $, $$, esc, strip, fmt, slug, icon, reduceMotion, hash, shuffle, rp, num, bindMoney });
 
   /* ---------- Penyimpanan progres (localStorage) ---------- */
-  const KEY = 'aakm.v2';
-  const defaults = () => ({ done: {}, quiz: { attempts: [], wrong: [] }, ivqKnown: {}, glKnown: {}, visits: [], last: null });
+  // Tanpa login: kunci 'aakm.v2'. Saat login: cache per user 'aakm.v2.u.<id>'
+  // (sumber kebenaran tetap database; cache membuat tampilan instan).
+  const ANON_KEY = 'aakm.v2';
+  const defaults = () => ({ done: {}, quiz: { attempts: [], wrong: [] }, ivqKnown: {}, glKnown: {}, visits: [], last: null, pending: [] });
   const Store = {
+    key: ANON_KEY,
     data: defaults(),
+    defaults,
     load() {
-      try { const raw = localStorage.getItem(KEY); if (raw) this.data = Object.assign(defaults(), JSON.parse(raw)); } catch (e) { /* storage tidak tersedia */ }
+      this.data = defaults();
+      try { const raw = localStorage.getItem(this.key); if (raw) this.data = Object.assign(defaults(), JSON.parse(raw)); } catch (e) { /* storage tidak tersedia */ }
     },
-    save() { try { localStorage.setItem(KEY, JSON.stringify(this.data)); } catch (e) { /* abaikan */ } },
+    save() { try { localStorage.setItem(this.key, JSON.stringify(this.data)); } catch (e) { /* abaikan */ } },
+    use(uid) { this.key = uid ? `${ANON_KEY}.u.${uid}` : ANON_KEY; this.load(); },
+    readAnon() { try { return Object.assign(defaults(), JSON.parse(localStorage.getItem(ANON_KEY) || '{}')); } catch (e) { return defaults(); } },
+    clearAnon() { try { localStorage.removeItem(ANON_KEY); } catch (e) { /* abaikan */ } },
   };
   Store.load();
   AA.Store = Store;
@@ -208,13 +232,32 @@
         <div class="nav-title"><span>Alat</span></div>
         ${AA.NAV.tools.map((p) => navLink(`#/${p.key}`, icon(p.icon) + esc(p.title), isCur(p.key))).join('')}
       </div>
+      ${AA.Cloud && AA.Cloud.user ? `<div class="nav-group">
+        <div class="nav-title"><span>Akun</span></div>
+        ${navLink('#/akun', icon('user') + 'Akun & hasil belajar', isCur('akun'))}
+        ${AA.Cloud.isAdmin() ? navLink('#/admin', icon('users') + 'Admin peserta', isCur('admin')) : ''}
+      </div>` : ''}
       <div class="nav-group"><a href="v1.html" class="small">${icon('reset')}Versi lama</a></div>`;
     const nav = $('#nav');
     const st = nav.scrollTop;
     nav.innerHTML = html;
     nav.scrollTop = st;
-    $('#sideProgress').textContent = `${AA.doneCount()} dari ${AA.MODS.length} modul selesai`;
+    AA.renderWho();
   };
+  // Kartu pengguna di kaki sidebar
+  AA.renderWho = function () {
+    const C = AA.Cloud, who = $('#who');
+    const prog = `${AA.doneCount()} dari ${AA.MODS.length} modul selesai`;
+    if (C && C.user) {
+      const name = C.displayName();
+      who.innerHTML = `<a class="who" href="#/akun" title="Akun & hasil belajar"><span class="avatar" aria-hidden="true">${esc(AA.initials(name))}</span><span><b>${esc(name)}</b><small>${prog}</small></span></a>`;
+    } else if (C && C.enabled) {
+      who.innerHTML = `<a class="who" href="#/masuk"><span class="avatar avatar-ghost" aria-hidden="true">${icon('user', 'i-sm')}</span><span><b>Masuk</b><small>Simpan progres ke akunmu</small></span></a>`;
+    } else {
+      who.innerHTML = `<div class="who"><span class="avatar avatar-ghost" aria-hidden="true">${icon('user', 'i-sm')}</span><span><b>Mode lokal</b><small>${prog}</small></span></div>`;
+    }
+  };
+  AA.initials = (name) => (String(name).trim().split(/\s+/).slice(0, 2).map((w) => w[0] || '').join('') || '?').toUpperCase();
 
   function closeSidebar() { $('#sidebar').classList.remove('open'); $('#scrim').hidden = true; $('#menuBtn').setAttribute('aria-expanded', 'false'); }
   $('#menuBtn').addEventListener('click', () => { const open = !$('#sidebar').classList.contains('open'); $('#sidebar').classList.toggle('open', open); $('#scrim').hidden = !open; $('#menuBtn').setAttribute('aria-expanded', String(open)); });
@@ -305,10 +348,21 @@
     history.replaceState(null, '', url);
     r.param = param;
   };
+  // Halaman yang boleh dibuka tanpa login
+  const PUBLIC = new Set(['masuk', 'daftar', 'lupa-password', 'reset-password']);
   function render() {
     const r = parse();
+    const C = AA.Cloud;
+    if (C && C.enabled && C.requireLogin && !C.user && !PUBLIC.has(r.name)) {
+      const next = location.hash && location.hash !== '#/' ? '?next=' + encodeURIComponent(location.hash.slice(1)) : '';
+      history.replaceState(null, '', '#/masuk' + next);
+      return render();
+    }
+    if (C && C.user && (r.name === 'masuk' || r.name === 'daftar')) { history.replaceState(null, '', '#/'); return render(); }
     let page = AA.pages[r.name];
     if (!page) { r.name = 'home'; page = AA.pages.home; }
+    if (page.adminOnly && !(C && C.isAdmin())) { r.name = 'home'; page = AA.pages.home; }
+    document.body.classList.toggle('auth-mode', !!page.bare);
     if (r.name === 'modul' && !AA.mod(r.param)) { r.param = AA.nextModule().key; }
     if (cleanup) { try { cleanup(); } catch (e) { /* abaikan */ } cleanup = null; }
     AA.route = r;
@@ -324,8 +378,13 @@
   }
   AA.rerender = render;
   window.addEventListener('hashchange', render);
-  window.addEventListener('DOMContentLoaded', () => {
-    if (!location.hash) history.replaceState(null, '', '#/');
+  window.addEventListener('DOMContentLoaded', async () => {
+    // Tunggu sesi login dipulihkan (maks 6 detik) sebelum render pertama
+    if (AA.Cloud) {
+      main.innerHTML = '<div class="boot" aria-busy="true"><span class="brand-mark"></span></div>';
+      try { await Promise.race([AA.Cloud.init(), new Promise((res) => setTimeout(res, 6000))]); } catch (e) { console.error(e); }
+    }
+    if (!location.hash || !location.hash.startsWith('#/')) history.replaceState(null, '', location.pathname + location.search + '#/');
     render();
   });
 })();

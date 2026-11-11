@@ -86,7 +86,7 @@ window.AA_DATA = {
    "prefix": "ACC, DUE, AGE",
    "klik": "Komponen bunga pinjaman (bisa lebih dari satu).",
    "pts": [
-    "Bank bisa punya beberapa interest property: principal interest, penalty interest, dst. (USD 5%, GBP 4%, dst.).",
+    "Bank bisa punya beberapa interest property: principal interest, penalty interest, dst. (IDR 8%, USD 5%, dst.).",
     "Tipe: Fixed (rate ditentukan), Floating (Id BASIC.RATE.TEXT / BASIC.INTEREST), Periodic (Id PERIODIC.INTEREST, default rate berdasarkan TERM, bisa di-interpolate, bisa di-reset berkala).",
     "Jika user input rate sendiri, sistem tidak default dari BASIC.INTEREST/PERIODIC.INTEREST.",
     "Tiered rates: SINGLE, LEVEL, BAND, MIXED — tiap tier bisa beda rate type, margin, min & max.",
@@ -163,7 +163,7 @@ window.AA_DATA = {
     "Tolerance: tidak meng-age jika outstanding dalam batas % dari bill atau nominal per currency; Tolerance Action = REPAY atau REMAIN.",
     "Bill Settlement: Delinquent basis (deemed settled saat total repayment ≥ bill amount) atau Financial basis (semua saldo benar2 lunas). Activities pemicu: LENDING-APPLYPAYMENT-PAYMENT.RULES, LENDING-UPDATE-OVERDUE."
    ],
-   "ws": "Workshop 24–26: Grace 1 hari; Delinquent 5 hari + notice; NAB 60 hari + suspend + age all bills; tolerance 2% REMAIN / USD 5 REPAY."
+   "ws": "Workshop 24–26: Grace 1 hari; Delinquent 5 hari + notice; NAB 60 hari + suspend + age all bills; tolerance 2% REMAIN / Rp50.000 REPAY."
   },
   {
    "id": "CHARGE",
@@ -173,13 +173,13 @@ window.AA_DATA = {
    "klik": "Biaya-biaya (fee) pada pinjaman.",
    "pts": [
     "Charge property boleh banyak; currency optional.",
-    "Charge Type: Flat (amount ditetapkan, mis. USD 50) atau Calculated (persentase dari balance, mis. 2% dari transaction amount).",
-    "Calculation Type: Flat / Percentage / Unit (USD 2 per transaction); Charge Rate wajib untuk Percentage, Charge Amount wajib untuk Flat & Unit.",
+    "Charge Type: Flat (amount ditetapkan, mis. Rp500.000) atau Calculated (persentase dari balance, mis. 2% dari transaction amount).",
+    "Calculation Type: Flat / Percentage / Unit (Rp25.000 per transaksi); Charge Rate wajib untuk Percentage, Charge Amount wajib untuk Flat & Unit.",
     "Tiered: Level, Banded, Groups; Min & Max charge per tier (tidak untuk Flat).",
     "Calculation Threshold: base amount minimum agar dihitung (bukan Flat).",
     "Free Amount: potongan dari charge terhitung (rebate)."
    ],
-   "ws": "Workshop 27–30: Property SUSPEND; condition flat USD 100; tiered 0/2%/1,5%/1% dengan min-max; rebate 50."
+   "ws": "Workshop 27–30: Property SUSPEND; condition flat Rp1.000.000; tiered 0/2%/1,5%/1% dengan min-max; rebate 50."
   },
   {
    "id": "ACTIVITY.CHARGES",
@@ -388,7 +388,7 @@ window.AA_DATA = {
   },
   {
    "k": "aa.prd.des product condition fixed.rate currency effective date id",
-   "a": "AA.PRD.DES.<Property Class> mendefinisikan Product Condition per Property Class, mis. AA.PRD.DES.TERM.AMOUNT, AA.PRD.DES.ACCOUNT. Bisa dibuat beberapa kondisi berbeda dan beberapa record ber-tanggal. Field kondisi mewakili atribut Property Class. Date-specific bila property class DATED; currency-specific bila diizinkan (untuk multi-currency harus dibuat per currency; currency bisa OPT.CCY mis. Charge). Currency & Effective Date menjadi bagian Id, contoh: FIXED.RATE-USD-20100101; FIXED.INTEREST-GBP-20100101. Kondisi bisa ber-value date masa depan."
+   "a": "AA.PRD.DES.<Property Class> mendefinisikan Product Condition per Property Class, mis. AA.PRD.DES.TERM.AMOUNT, AA.PRD.DES.ACCOUNT. Bisa dibuat beberapa kondisi berbeda dan beberapa record ber-tanggal. Field kondisi mewakili atribut Property Class. Date-specific bila property class DATED; currency-specific bila diizinkan (untuk multi-currency harus dibuat per currency; currency bisa OPT.CCY mis. Charge). Currency & Effective Date menjadi bagian Id, contoh: FIXED.RATE-IDR-20100101; FIXED.INTEREST-USD-20100101. Kondisi bisa ber-value date masa depan."
   },
   {
    "k": "default negotiable negotiation rules nr.attribute options type value message comparison error override fix value range",
@@ -448,7 +448,7 @@ window.AA_DATA = {
   },
   {
    "k": "charge property class flat calculated percentage unit tiered level banded groups minimum maximum threshold free amount rebate",
-   "a": "CHARGE (DATED, OPT.CCY, MULTIPLE, TRACKING, FORWARD.DATED; prefix ACC/DUE/AGE): Flat (amount tetap, mis. USD 50) atau Calculated (2% dari transaction amount, 3% dari commitment). Calculation Type: Flat / Percentage (butuh Charge Rate) / Unit (butuh Charge Amount, dikalikan). Tiered: Level / Banded / Groups. Min & Max per tier (tidak untuk Flat). Calculation Threshold: base minimum agar dihitung. Free Amount: potongan/rebate dari charge terhitung."
+   "a": "CHARGE (DATED, OPT.CCY, MULTIPLE, TRACKING, FORWARD.DATED; prefix ACC/DUE/AGE): Flat (amount tetap, mis. Rp500.000) atau Calculated (2% dari transaction amount, 3% dari commitment). Calculation Type: Flat / Percentage (butuh Charge Rate) / Unit (butuh Charge Amount, dikalikan). Tiered: Level / Banded / Groups. Min & Max per tier (tidak untuk Flat). Calculation Threshold: base minimum agar dihitung. Free Amount: potongan/rebate dari charge terhitung."
   },
   {
    "k": "activity charges property class billed capitalised deferred charge when activity performed disbursement charge annual fee break rule",
@@ -492,7 +492,7 @@ window.AA_DATA = {
   },
   {
    "k": "reverse and replay effective dated processing noreverse noreplay back valued commitment example",
-   "a": "Reverse & Replay: mengubah/membalik activity dari tanggal berapa pun sejak kontrak dimulai; LINE.ATTRIBUTE Product Line harus punya opsi REPLAY. Reversal tidak bisa bila AA.ACTIVITY.CLASS type NOREVERSE; replay tidak bisa bila NOREPLAY. Proses: membalik semua activity terkait dari hari ini mundur ke tanggal back-valued, lalu memutar ulang dari tanggal itu ke hari ini; accounting entries dibuat untuk keduanya; history kondisi harus lengkap. Contoh: 1 Jan commitment 500T → 31 Jan +50T → 15 Feb −100T = 450T; back-valued +150T tgl 15 Jan → reverse dua transaksi terakhir → replay → posisi 600T."
+   "a": "Reverse & Replay: mengubah/membalik activity dari tanggal berapa pun sejak kontrak dimulai; LINE.ATTRIBUTE Product Line harus punya opsi REPLAY. Reversal tidak bisa bila AA.ACTIVITY.CLASS type NOREVERSE; replay tidak bisa bila NOREPLAY. Proses: membalik semua activity terkait dari hari ini mundur ke tanggal back-valued, lalu memutar ulang dari tanggal itu ke hari ini; accounting entries dibuat untuk keduanya; history kondisi harus lengkap. Contoh: 1 Jan commitment Rp500 juta → 31 Jan +Rp50 juta → 15 Feb −Rp100 juta = Rp450 juta; back-valued +Rp150 juta tgl 15 Jan → reverse dua transaksi terakhir → replay → posisi Rp600 juta."
   },
   {
    "k": "simulation overview replicates real time sim files execute convert live arrangement runner service",
@@ -580,7 +580,7 @@ window.AA_DATA = {
   },
   {
    "k": "product vs arrangement template instance customer contoh rakesh emi negosiasi",
-   "a": "Product vs Arrangement: Product = template dibuat sekali berisi aturan default, dipakai banyak customer (Home Loan: bunga 8,5%, maks 20 tahun, EMI bulanan). Arrangement = kontrak live dibuat per customer, memuat nilai spesifik customer (Rakesh: ₹50.00.000, bunga dinegosiasikan 8,25%, term 15 tahun)."
+   "a": "Product vs Arrangement: Product = template dibuat sekali berisi aturan default, dipakai banyak customer (Home Loan: bunga 8,5%, maks 20 tahun, EMI bulanan). Arrangement = kontrak live dibuat per customer, memuat nilai spesifik customer (Rakesh: Rp500.000.000, bunga dinegosiasikan 8,25%, term 15 tahun)."
   },
   {
    "k": "loan booking new arrangement flow product catalog validasi authorization maker checker arrangement id",
@@ -596,31 +596,31 @@ window.AA_DATA = {
   },
   {
    "k": "interest accrual cob close of business daily 1130 formula 365 posting difference",
-   "a": "Interest Accrual = menghitung & mengakui bunga setiap hari meski EMI belum dibayar — dijalankan saat COB (Close of Business, batch end-of-day). Rumus: Daily Interest = (Principal × Rate) ÷ 365. Contoh ₹50.00.000 @8,25% ≈ ₹1.130,14/hari. Accrual vs Posting: accrual harian mengakui income (tanpa pembayaran customer); posting periodik memindahkan bunga accrued ke dues/income sesuai aturan. Accounting: Dr Interest Receivable / Cr Interest Income. Prinsip: accrual accounting — income diakui saat diperoleh, bukan saat kas diterima."
+   "a": "Interest Accrual = menghitung & mengakui bunga setiap hari meski EMI belum dibayar — dijalankan saat COB (Close of Business, batch end-of-day). Rumus: Daily Interest = (Principal × Rate) ÷ 365. Contoh Rp500.000.000 @8,25% ≈ Rp113.014/hari. Accrual vs Posting: accrual harian mengakui income (tanpa pembayaran customer); posting periodik memindahkan bunga accrued ke dues/income sesuai aturan. Accounting: Dr Interest Receivable / Cr Interest Income. Prinsip: accrual accounting — income diakui saat diperoleh, bukan saat kas diterima."
   },
   {
    "k": "emi equated monthly installment repayment schedule payment allocation charges penalty interest principal urutan",
-   "a": "EMI (Equated Monthly Installment) = pembayaran tetap berkala sampai lunas (mis. ₹50.00.000, 20 th, 8,25% → ±₹42.603). Mula-mula interest > principal, nanti principal > interest. Repayment schedule dibuat saat authorize & diupdate tiap pembayaran; COB men-generate due sebelum tanggal EMI. Payment allocation (urutan dikonfigurasi produk): charges → penalty interest → interest → principal. Partial payment: sisa tetap outstanding/overdue sesuai produk. Advance payment: disesuaikan cicilan mendatang, potong principal, atau ditahan. Missed EMI: OVERDUE, COB berikutnya menghitung penal interest. Accounting EMI: Dr Customer A/C / Cr Interest Receivable + Cr Loan Principal + Cr Charges Income."
+   "a": "EMI (Equated Monthly Installment) = pembayaran tetap berkala sampai lunas (mis. Rp500.000.000, 20 th, 8,25% → ±Rp4.260.300). Mula-mula interest > principal, nanti principal > interest. Repayment schedule dibuat saat authorize & diupdate tiap pembayaran; COB men-generate due sebelum tanggal EMI. Payment allocation (urutan dikonfigurasi produk): charges → penalty interest → interest → principal. Partial payment: sisa tetap outstanding/overdue sesuai produk. Advance payment: disesuaikan cicilan mendatang, potong principal, atau ditahan. Missed EMI: OVERDUE, COB berikutnya menghitung penal interest. Accounting EMI: Dr Customer A/C / Cr Interest Receivable + Cr Loan Principal + Cr Charges Income."
   },
   {
    "k": "overdue dpd days past due delinquency penalty late payment charge collection recovery klasifikasi npa",
-   "a": "Overdue = gagal bayar pada/before due date; Delinquency = kondisi customer punya overdue. DPD (Days Past Due) = hari sejak due date tanpa pembayaran, diupdate COB. Penalty interest (mis. 8,25% + 2% = 10,25% efektif) & late payment charge (mis. ₹500) sesuai konfigurasi. Collection: SMS → email → telepon → kunjungan → legal notice. Recovery: tim recovery, restrukturisasi, legal, eksekusi collateral. Klasifikasi bisnis: 0 regular; 1–30 early delinquency; 31–90 serious; >90 potensi NPA (regulasi lokal). Overdue bisa kembali regular setelah semua dues dilunasi."
+   "a": "Overdue = gagal bayar pada/before due date; Delinquency = kondisi customer punya overdue. DPD (Days Past Due) = hari sejak due date tanpa pembayaran, diupdate COB. Penalty interest (mis. 8,25% + 2% = 10,25% efektif) & late payment charge (mis. Rp50.000) sesuai konfigurasi. Collection: SMS → email → telepon → kunjungan → legal notice. Recovery: tim recovery, restrukturisasi, legal, eksekusi collateral. Klasifikasi bisnis: 0 regular; 1–30 early delinquency; 31–90 serious; >90 potensi NPA (regulasi lokal). Overdue bisa kembali regular setelah semua dues dilunasi."
   },
   {
    "k": "rescheduling restructuring moratorium tenure extension top up additional disbursement emi reduction",
-   "a": "Loan Rescheduling = mengubah syarat pinjaman tanpa membuat pinjaman baru (arrangement sama lanjut), via AA.ARRANGEMENT.ACTIVITY: RESCHEDULE, CHANGE.TERM, CHANGE.INTEREST, CHANGE.REPAYMENT, MORATORIUM, TOP.UP. Jenis: EMI reduction (₹42.603 → ₹34.800), tenure extension (20 → 25 tahun), interest revision, moratorium (payment holiday 6 bulan — bunga bisa tetap accrue/capitalize/deferred), frequency change (bulanan → kuartalan), balloon payment, top-up (tambah plafon ₹10L, schedule dihitung ulang), additional disbursement bertahap. Rescheduling = operasional; restructuring = lebih luas untuk borrower bermasalah (konsesi bunga, penyesuaian principal). Umumnya tanpa entry accounting langsung kecuali top-up (Dr Loan Asset / Cr Customer A/C)."
+   "a": "Loan Rescheduling = mengubah syarat pinjaman tanpa membuat pinjaman baru (arrangement sama lanjut), via AA.ARRANGEMENT.ACTIVITY: RESCHEDULE, CHANGE.TERM, CHANGE.INTEREST, CHANGE.REPAYMENT, MORATORIUM, TOP.UP. Jenis: EMI reduction (Rp4.260.300 → Rp3.480.000), tenure extension (20 → 25 tahun), interest revision, moratorium (payment holiday 6 bulan — bunga bisa tetap accrue/capitalize/deferred), frequency change (bulanan → kuartalan), balloon payment, top-up (tambah plafon Rp100 juta, schedule dihitung ulang), additional disbursement bertahap. Rescheduling = operasional; restructuring = lebih luas untuk borrower bermasalah (konsesi bunga, penyesuaian principal). Umumnya tanpa entry accounting langsung kecuali top-up (Dr Loan Asset / Cr Customer A/C)."
   },
   {
    "k": "prepayment full partial foreclosure payoff pre-closure charge total settlement accounting closure",
-   "a": "Prepayment = bayar sebelum due date. Partial (sebagian — pinjaman tetap aktif) vs Full (seluruh — closed). Foreclosure = penutupan sebelum maturity setelah payoff dibayar. Payoff = settlement akhir: outstanding principal + accrued interest + penalty + pre-closure charge + pajak. Contoh: ₹28.00.000 + 25.000 + 2.000 + 8.000 + GST 1.440 = ₹28.36.440. Pre-closure charge mis. 2%. Activity PAYOFF/SETTLEMENT via AA.ARRANGEMENT.ACTIVITY. Setelah closure: accrual & EMI berhenti, status CLOSED, history tetap untuk audit, limit & collateral dilepas."
+   "a": "Prepayment = bayar sebelum due date. Partial (sebagian — pinjaman tetap aktif) vs Full (seluruh — closed). Foreclosure = penutupan sebelum maturity setelah payoff dibayar. Payoff = settlement akhir: outstanding principal + accrued interest + penalty + pre-closure charge + pajak. Contoh: Rp280.000.000 + 2.500.000 + 200.000 + 800.000 + PPN 88.000 = Rp283.588.000. Pre-closure charge mis. 2%. Activity PAYOFF/SETTLEMENT via AA.ARRANGEMENT.ACTIVITY. Setelah closure: accrual & EMI berhenti, status CLOSED, history tetap untuk audit, limit & collateral dilepas."
   },
   {
    "k": "accounting double entry gl general ledger stmt.entry categ.entry loan asset interest receivable income charges",
-   "a": "Accounting Temenos: double entry (Total Debit = Total Credit). GL = buku induk: Loan Asset GL (outstanding pinjaman), Interest Income, Interest Receivable (accrued), Charges Income, Cash. Customer account (milik customer, saldo customer) vs GL account (milik bank). STMT.ENTRY = entry akun customer (statement, operasional: amount, date, currency, narrative). CATEG.ENTRY = entry GL (trial balance, P&L, balance sheet). Accounting per tahap: booking biasanya tanpa entry; disbursement Dr Loan Asset / Cr Customer; accrual Dr Interest Receivable / Cr Interest Income; EMI Dr Customer / Cr Interest + Principal + Charges; payoff Dr Customer / Cr semua komponen + GST."
+   "a": "Accounting Temenos: double entry (Total Debit = Total Credit). GL = buku induk: Loan Asset GL (outstanding pinjaman), Interest Income, Interest Receivable (accrued), Charges Income, Cash. Customer account (milik customer, saldo customer) vs GL account (milik bank). STMT.ENTRY = entry akun customer (statement, operasional: amount, date, currency, narrative). CATEG.ENTRY = entry GL (trial balance, P&L, balance sheet). Accounting per tahap: booking biasanya tanpa entry; disbursement Dr Loan Asset / Cr Customer; accrual Dr Interest Receivable / Cr Interest Income; EMI Dr Customer / Cr Interest + Principal + Charges; payoff Dr Customer / Cr semua komponen + PPN."
   },
   {
    "k": "credit limit approved available utilized hierarchy corporate facility collateral ltv loan to value release",
-   "a": "Credit Limit = maksimum yang bank pinjamkan ke customer. Hierarchy: Corporate → Customer → Facility → Loan Arrangement (₹10Cr → ₹2Cr → ₹1Cr → ₹50L). Approved − Utilized = Available (₹1Cr − 40L = 60L; update otomatis per booking). Validasi saat booking: limit aktif, disetujui, belum expired, amount dalam available, currency valid. Collateral = aset jaminan (properti, cash/FD, emas, kendaraan, sekuritas, bank guarantee). LTV = Loan ÷ Collateral Value × 100 (mis. 50L ÷ 75L = 66,67%, batas 80% → lolos). Setelah closure: utilized limit & collateral dilepas, available dipulihkan."
+   "a": "Credit Limit = maksimum yang bank pinjamkan ke customer. Hierarchy: Corporate → Customer → Facility → Loan Arrangement (Rp10 miliar → Rp2 miliar → Rp1 miliar → Rp500 juta). Approved − Utilized = Available (Rp1 miliar − Rp400 juta = Rp600 juta; update otomatis per booking). Validasi saat booking: limit aktif, disetujui, belum expired, amount dalam available, currency valid. Collateral = aset jaminan (properti, cash/FD, emas, kendaraan, sekuritas, bank guarantee). LTV = Loan ÷ Collateral Value × 100 (mis. Rp500 juta ÷ Rp750 juta = 66,67%, batas 80% → lolos). Setelah closure: utilized limit & collateral dilepas, available dipulihkan."
   },
   {
    "k": "sit uat functional testing end-to-end loan test fase sql validasi defect lifecycle regression",
@@ -1033,7 +1033,7 @@ window.AA_DATA = {
     "(Loan + Interest) ÷ Collateral"
    ],
    "a": 1,
-   "e": "Contoh: loan ₹50L, nilai properti ₹75L → LTV 66,67%."
+   "e": "Contoh: loan Rp500 juta, nilai properti Rp750 juta → LTV 66,67%."
   },
   {
    "q": "STMT.ENTRY vs CATEG.ENTRY — pasangan yang benar…",
@@ -1433,7 +1433,7 @@ window.AA_DATA = {
     ],
     [
      "p",
-     "Contoh nyata: Lending → Mortgage Loans → Home Loan → property classes (CUSTOMER, TERM.AMOUNT, INTEREST, PAYMENT.RULES, ACCOUNTING, CHARGES) → properties (Customer, Commitment, Principal Interest, Repayment, Accounting, Processing Fee) → product conditions (interest 8,5%, tenure 20 tahun, EMI bulanan, fee 1%) → Arrangement (Rakesh, pinjaman ₹50.00.000)."
+     "Contoh nyata: Lending → Mortgage Loans → Home Loan → property classes (CUSTOMER, TERM.AMOUNT, INTEREST, PAYMENT.RULES, ACCOUNTING, CHARGES) → properties (Customer, Commitment, Principal Interest, Repayment, Accounting, Processing Fee) → product conditions (interest 8,5%, tenure 20 tahun, EMI bulanan, fee 1%) → Arrangement (Rakesh, pinjaman Rp500.000.000)."
     ],
     [
      "h",
@@ -1489,7 +1489,7 @@ window.AA_DATA = {
     ],
     [
      "p",
-     "Kontrak live customer: Rakesh, Home Loan, ₹50.00.000, 8,25%, 15 tahun. Setelah authorized, activity disbursement/accrual/repayment/payoff berjalan terhadapnya."
+     "Kontrak live customer: Rakesh, Home Loan, Rp500.000.000, 8,25%, 15 tahun. Setelah authorized, activity disbursement/accrual/repayment/payoff berjalan terhadapnya."
     ],
     [
      "tbl",
@@ -1662,7 +1662,7 @@ window.AA_DATA = {
       ],
       [
        "Loan Amount",
-       "Min ₹1.00.000 · Maks ₹1.00.00.000"
+       "Min Rp10.000.000 · Maks Rp1.000.000.000"
       ]
      ]
     ],
@@ -1739,7 +1739,7 @@ window.AA_DATA = {
     ],
     [
      "p",
-     "Produk Home Loan sudah dikonfigurasi. Customer Rakesh Kumar ingin pinjaman ₹50.00.000, 20 tahun, EMI bulanan. Proses ini disebut <b>Loan Booking</b> — membuat Arrangement live dari Produk yang ada."
+     "Produk Home Loan sudah dikonfigurasi. Customer Rakesh Kumar ingin pinjaman Rp500.000.000, 20 tahun, EMI bulanan. Proses ini disebut <b>Loan Booking</b> — membuat Arrangement live dari Produk yang ada."
     ],
     [
      "flow",
@@ -1785,8 +1785,8 @@ window.AA_DATA = {
      [
       "<b>Product Catalog</b>: LENDING → Mortgage Loans → Standard Home Loan → klik <i>New Arrangement</i>.",
       "<b>Customer</b>: pilih ID (100234 — Rakesh Kumar). Validasi: ada, aktif, KYC lengkap, eligible.",
-      "<b>Loan Amount</b>: ₹50.00.000 — divalidasi min/maks produk &amp; limit customer.",
-      "<b>Currency</b>: INR — default dari produk, bisa dinegosiasikan bila diizinkan.",
+      "<b>Loan Amount</b>: Rp500.000.000 — divalidasi min/maks produk &amp; limit customer.",
+      "<b>Currency</b>: IDR — default dari produk, bisa dinegosiasikan bila diizinkan.",
       "<b>Agreement Date</b>: 20-Jul-2026 — tanggal perjanjian ditandatangani.",
       "<b>Term</b>: 20 tahun — divalidasi min/maks &amp; aturan negosiasi."
      ]
@@ -1826,7 +1826,7 @@ window.AA_DATA = {
       "<b>Interest</b>: default 8,50% → dinegosiasikan 8,25% (produk mengizinkan).",
       "<b>Repayment</b>: bulanan (weekly/fortnightly/quarterly/half-yearly/yearly) &amp; method EMI (atau Bullet, Interest Only, Linear, Constant).",
       "<b>Collateral</b>: House Property (opsional sesuai produk).",
-      "<b>Limits</b>: limit kredit ₹75.00.000, diminta ₹50.00.000 → lolos.",
+      "<b>Limits</b>: limit kredit Rp750.000.000, diminta Rp500.000.000 → lolos.",
       "<b>Validasi</b>: field wajib, customer, produk, negosiasi, limit, tanggal, currency, repayment, interest, charges → status <b>INPUT</b>.",
       "<b>Authorization</b>: maker membuat → checker mengauthorize → status <b>AUTHORIZED</b>."
      ]
@@ -1906,7 +1906,7 @@ window.AA_DATA = {
     ],
     [
      "p",
-     "Pinjaman Rakesh sudah AUTHORIZED (₹50.00.000, 8,25%, 20 tahun) tapi dana belum cair. <b>Disbursement</b> = melepaskan dana yang disetujui ke customer / pihak ketiga. Arrangement sudah ada; disbursement membuat dana tersedia."
+     "Pinjaman Rakesh sudah AUTHORIZED (Rp500.000.000, 8,25%, 20 tahun) tapi dana belum cair. <b>Disbursement</b> = melepaskan dana yang disetujui ke customer / pihak ketiga. Arrangement sudah ada; disbursement membuat dana tersedia."
     ],
     [
      "flow",
@@ -1937,17 +1937,17 @@ window.AA_DATA = {
       [
        "Full",
        "Seluruh amount sekaligus",
-       "Approved ₹50L → disbursed ₹50L"
+       "Approved Rp500 juta → disbursed Rp500 juta"
       ],
       [
        "Partial",
        "Sebagian amount",
-       "₹50L → ₹20L (sisa ₹30L) — umum di konstruksi/project/pendidikan"
+       "Rp500 juta → Rp200 juta (sisa Rp300 juta) — umum di konstruksi/project/pendidikan"
       ],
       [
        "Multiple",
        "Bertahap per stage",
-       "Foundation ₹10L, Structure ₹15L, Roofing ₹15L, Completion ₹10L"
+       "Foundation Rp100 juta, Structure Rp150 juta, Roofing Rp150 juta, Completion Rp100 juta"
       ]
      ]
     ],
@@ -1977,11 +1977,11 @@ window.AA_DATA = {
       ],
       [
        "Debit — Loan Asset GL",
-       "₹50.00.000"
+       "Rp500.000.000"
       ],
       [
        "Credit — Customer Settlement Account",
-       "₹50.00.000"
+       "Rp500.000.000"
       ]
      ]
     ],
@@ -1995,7 +1995,7 @@ window.AA_DATA = {
     ],
     [
      "p",
-     "Bunga berjalan atas <b>jumlah yang telah disbursed</b> sejak tanggal effective disbursement. Disbursed ₹20L → bunga hanya atas ₹20L sampai pencairan berikutnya."
+     "Bunga berjalan atas <b>jumlah yang telah disbursed</b> sejak tanggal effective disbursement. Disbursed Rp200 juta → bunga hanya atas Rp200 juta sampai pencairan berikutnya."
     ],
     [
      "h",
@@ -2074,7 +2074,7 @@ window.AA_DATA = {
     ],
     [
      "p",
-     "Pinjaman ₹50.00.000 @8,25% disbursed 01-Aug-2026; EMI pertama 05-Sep-2026. Bank <b>tidak menunggu EMI</b> untuk mengakui pendapatan — bunga dihitung &amp; dicatat <b>setiap hari</b> lewat <b>Interest Accrual</b> saat <b>COB (Close of Business)</b>."
+     "Pinjaman Rp500.000.000 @8,25% disbursed 01-Aug-2026; EMI pertama 05-Sep-2026. Bank <b>tidak menunggu EMI</b> untuk mengakui pendapatan — bunga dihitung &amp; dicatat <b>setiap hari</b> lewat <b>Interest Accrual</b> saat <b>COB (Close of Business)</b>."
     ],
     [
      "h",
@@ -2082,7 +2082,7 @@ window.AA_DATA = {
     ],
     [
      "box",
-     "Daily Interest = (Principal × Rate) ÷ 365<br>Contoh: (50.00.000 × 8,25%) ÷ 365 ≈ ₹1.130,14 per hari"
+     "Daily Interest = (Principal × Rate) ÷ 365<br>Contoh: (500.000.000 × 8,25%) ÷ 365 ≈ Rp113.014 per hari"
     ],
     [
      "p",
@@ -2193,11 +2193,11 @@ window.AA_DATA = {
       ],
       [
        "Debit — Interest Receivable GL",
-       "₹1.130,14"
+       "Rp113.014"
       ],
       [
        "Credit — Interest Income GL",
-       "₹1.130,14"
+       "Rp113.014"
       ]
      ]
     ],
@@ -2254,7 +2254,7 @@ window.AA_DATA = {
     ],
     [
      "p",
-     "<b>Equated Monthly Installment</b> — jumlah tetap yang dibayar berkala sampai lunas. Contoh: ₹50.00.000, 20 tahun, 8,25% → EMI ±₹42.603. Mula-mula porsi interest &gt; principal; lama-lama principal &gt; interest."
+     "<b>Equated Monthly Installment</b> — jumlah tetap yang dibayar berkala sampai lunas. Contoh: Rp500.000.000, 20 tahun, 8,25% → EMI ±Rp4.260.300. Mula-mula porsi interest &gt; principal; lama-lama principal &gt; interest."
     ],
     [
      "h",
@@ -2273,23 +2273,23 @@ window.AA_DATA = {
       [
        "1",
        "05-Sep",
-       "₹8.200",
-       "₹34.403",
-       "₹42.603"
+       "Rp820.000",
+       "Rp3.440.300",
+       "Rp4.260.300"
       ],
       [
        "2",
        "05-Okt",
-       "₹8.250",
-       "₹34.353",
-       "₹42.603"
+       "Rp825.000",
+       "Rp3.435.300",
+       "Rp4.260.300"
       ],
       [
        "3",
        "05-Nov",
-       "₹8.310",
-       "₹34.293",
-       "₹42.603"
+       "Rp831.000",
+       "Rp3.429.300",
+       "Rp4.260.300"
       ]
      ],
      "Schedule dibuat saat arrangement authorized dan diupdate tiap pembayaran. Sebelum tanggal EMI, COB men-generate jumlah due (status DUE)."
@@ -2307,7 +2307,7 @@ window.AA_DATA = {
       "Interest",
       "Principal"
      ],
-     "Urutan alokasi dikonfigurasi di produk (sebagian bank memprioritaskan interest lebih dulu). Contoh ₹42.603 → charges ₹500 + interest ₹33.903 + principal ₹8.200."
+     "Urutan alokasi dikonfigurasi di produk (sebagian bank memprioritaskan interest lebih dulu). Contoh Rp4.260.300 → charges Rp50.000 + interest Rp3.390.300 + principal Rp820.000."
     ],
     [
      "h",
@@ -2316,8 +2316,8 @@ window.AA_DATA = {
     [
      "list",
      [
-      "<b>Partial payment</b>: bayar ₹20.000 dari due ₹42.603 → sisa ₹22.603; sesuai produk: tetap outstanding/overdue, penalty bisa berlaku, COB berikutnya update saldo overdue.",
-      "<b>Advance payment</b>: bayar ₹85.206 → sesuai aturan produk: disesuaikan ke cicilan mendatang, langsung memotong principal, atau ditahan sampai due berikutnya.",
+      "<b>Partial payment</b>: bayar Rp2.000.000 dari due Rp4.260.300 → sisa Rp2.260.300; sesuai produk: tetap outstanding/overdue, penalty bisa berlaku, COB berikutnya update saldo overdue.",
+      "<b>Advance payment</b>: bayar Rp8.520.600 → sesuai aturan produk: disesuaikan ke cicilan mendatang, langsung memotong principal, atau ditahan sampai due berikutnya.",
       "<b>Missed EMI</b>: lewat due date tanpa bayar → status OVERDUE; COB berikutnya menghitung penal interest, update saldo overdue, informasi collection."
      ]
     ],
@@ -2334,19 +2334,19 @@ window.AA_DATA = {
       ],
       [
        "Debit — Customer Settlement Account",
-       "₹42.603"
+       "Rp4.260.300"
       ],
       [
        "Credit — Interest Receivable",
-       "₹33.903"
+       "Rp3.390.300"
       ],
       [
        "Credit — Loan Principal",
-       "₹8.200"
+       "Rp820.000"
       ],
       [
        "Credit — Charges Income",
-       "₹500"
+       "Rp50.000"
       ]
      ]
     ],
@@ -2391,7 +2391,7 @@ window.AA_DATA = {
     ],
     [
      "p",
-     "EMI due 05-Sep ₹42.603 tidak dibayar → 06-Sep Temenos mulai overdue processing. <b>Overdue</b> = gagal membayar pada/before due date; <b>Delinquency</b> = kondisi customer memiliki overdue."
+     "EMI due 05-Sep Rp4.260.300 tidak dibayar → 06-Sep Temenos mulai overdue processing. <b>Overdue</b> = gagal membayar pada/before due date; <b>Delinquency</b> = kondisi customer memiliki overdue."
     ],
     [
      "flow",
@@ -2443,7 +2443,7 @@ window.AA_DATA = {
     ],
     [
      "box",
-     "Contoh: normal 8,25% + penalty 2% = 10,25% efektif selama overdue.<br>Late Payment Fee tetap, mis. ₹500 — ditambahkan ke outstanding dues."
+     "Contoh: normal 8,25% + penalty 2% = 10,25% efektif selama overdue.<br>Late Payment Fee tetap, mis. Rp50.000 — ditambahkan ke outstanding dues."
     ],
     [
      "h",
@@ -2499,11 +2499,11 @@ window.AA_DATA = {
       ],
       [
        "Debit — Customer Charges Receivable",
-       "₹500"
+       "Rp50.000"
       ],
       [
        "Credit — Charges Income GL",
-       "₹500"
+       "Rp50.000"
       ]
      ]
     ],
@@ -2551,7 +2551,7 @@ window.AA_DATA = {
     ],
     [
      "p",
-     "Rakesh kehilangan pekerjaan; EMI ₹42.603 terlalu berat. Bank merestrukturisasi. <b>Rescheduling</b> = mengubah syarat pinjaman <b>tanpa membuat pinjaman baru</b>; arrangement yang sama berlanjut."
+     "Rakesh kehilangan pekerjaan; EMI Rp4.260.300 terlalu berat. Bank merestrukturisasi. <b>Rescheduling</b> = mengubah syarat pinjaman <b>tanpa membuat pinjaman baru</b>; arrangement yang sama berlanjut."
     ],
     [
      "h",
@@ -2568,7 +2568,7 @@ window.AA_DATA = {
       [
        "EMI Reduction",
        "EMI lebih ringan",
-       "₹42.603 → ₹34.800 (tenure biasanya naik)"
+       "Rp4.260.300 → Rp3.480.000 (tenure biasanya naik)"
       ],
       [
        "Tenure Extension",
@@ -2598,12 +2598,12 @@ window.AA_DATA = {
       [
        "Top-up",
        "Tambahan plafon",
-       "Outstanding ₹30L + top-up ₹10L = ₹40L, schedule dihitung ulang"
+       "Outstanding Rp300 juta + top-up Rp100 juta = Rp400 juta, schedule dihitung ulang"
       ],
       [
        "Additional Disbursement",
        "Pencairan bertahap",
-       "Stage ₹20L + ₹15L + ₹15L (tiap cair: principal/interest/schedule diupdate)"
+       "Stage Rp200 juta + Rp150 juta + Rp150 juta (tiap cair: principal/interest/schedule diupdate)"
       ]
      ]
     ],
@@ -2633,7 +2633,7 @@ window.AA_DATA = {
     ],
     [
      "p",
-     "Backend: baca arrangement &amp; kondisi → terapkan kondisi baru → hitung ulang bunga &amp; EMI → generate schedule baru → update arrangement → catat activity. Accounting: umumnya <b>tanpa entry customer langsung</b> (hanya update future interest/installment); kecuali top-up → Debit Loan Asset GL / Credit Customer Account ₹10.00.000."
+     "Backend: baca arrangement &amp; kondisi → terapkan kondisi baru → hitung ulang bunga &amp; EMI → generate schedule baru → update arrangement → catat activity. Accounting: umumnya <b>tanpa entry customer langsung</b> (hanya update future interest/installment); kecuali top-up → Debit Loan Asset GL / Credit Customer Account Rp100.000.000."
     ],
     [
      "iq",
@@ -2672,7 +2672,7 @@ window.AA_DATA = {
     ],
     [
      "p",
-     "Outstanding principal ₹28.00.000, bunga 8,25%, sisa tenure 10 tahun. Rakesh dapat bonus dan ingin melunasi segera. <b>Prepayment</b> = membayar sebelum due date (partial atau full)."
+     "Outstanding principal Rp280.000.000, bunga 8,25%, sisa tenure 10 tahun. Rakesh dapat bonus dan ingin melunasi segera. <b>Prepayment</b> = membayar sebelum due date (partial atau full)."
     ],
     [
      "h",
@@ -2694,8 +2694,8 @@ window.AA_DATA = {
        "Pinjaman closed setelah payoff sukses"
       ],
       [
-       "₹28L → bayar ₹5L → sisa ₹23L",
-       "₹28L + interest ₹25.000 + charges ₹10.000 = payoff ₹28.35.000"
+       "Rp280 juta → bayar Rp50 juta → sisa Rp230 juta",
+       "Rp280 juta + interest Rp2.500.000 + charges Rp1.000.000 = payoff Rp283.500.000"
       ]
      ]
     ],
@@ -2727,33 +2727,33 @@ window.AA_DATA = {
       ],
       [
        "Outstanding Principal",
-       "₹28.00.000"
+       "Rp280.000.000"
       ],
       [
        "Accrued Interest",
-       "₹25.000"
+       "Rp2.500.000"
       ],
       [
        "Penal Interest",
-       "₹2.000"
+       "Rp200.000"
       ],
       [
        "Pre-closure Charge",
-       "₹8.000"
+       "Rp800.000"
       ],
       [
-       "GST",
-       "₹1.440"
+       "PPN 11%",
+       "Rp88.000"
       ],
       [
        "<b>Total Payoff</b>",
-       "<b>₹28.36.440</b>"
+       "<b>Rp283.588.000</b>"
       ]
      ]
     ],
     [
      "p",
-     "Pre-closure charge contoh 2% × ₹28.00.000 = ₹56.000 — tergantung produk &amp; regulasi. Activity: PAYOFF atau SETTLEMENT via <span class=\"mono\">AA.ARRANGEMENT.ACTIVITY</span>."
+     "Pre-closure charge contoh 2% × Rp280.000.000 = Rp5.600.000 — tergantung produk &amp; regulasi. Activity: PAYOFF atau SETTLEMENT via <span class=\"mono\">AA.ARRANGEMENT.ACTIVITY</span>."
     ],
     [
      "h",
@@ -2768,27 +2768,27 @@ window.AA_DATA = {
       ],
       [
        "Debit — Customer Settlement Account",
-       "₹28.36.440"
+       "Rp283.588.000"
       ],
       [
        "Credit — Loan Principal",
-       "₹28.00.000"
+       "Rp280.000.000"
       ],
       [
        "Credit — Interest Receivable",
-       "₹25.000"
+       "Rp2.500.000"
       ],
       [
        "Credit — Penalty Income",
-       "₹2.000"
+       "Rp200.000"
       ],
       [
        "Credit — Charges Income",
-       "₹8.000"
+       "Rp800.000"
       ],
       [
-       "Credit — GST Payable",
-       "₹1.440"
+       "Credit — PPN Keluaran",
+       "Rp88.000"
       ]
      ]
     ],
@@ -2860,7 +2860,7 @@ window.AA_DATA = {
     ],
     [
      "p",
-     "Setiap transaksi memiliki Debit &amp; Credit dengan <b>Total Debit = Total Credit</b>. Contoh disbursement ₹50.00.000: Debit Loan Asset, Credit Customer Account. <b>General Ledger (GL)</b> = buku induk seluruh transaksi akuntansi."
+     "Setiap transaksi memiliki Debit &amp; Credit dengan <b>Total Debit = Total Credit</b>. Contoh disbursement Rp500.000.000: Debit Loan Asset, Credit Customer Account. <b>General Ledger (GL)</b> = buku induk seluruh transaksi akuntansi."
     ],
     [
      "tbl",
@@ -2975,7 +2975,7 @@ window.AA_DATA = {
       ],
       [
        "Payoff",
-       "Dr Customer A/C / Cr Loan Principal + Interest Receivable + Charges + GST + Penalty"
+       "Dr Customer A/C / Cr Loan Principal + Interest Receivable + Charges + PPN + Penalty"
       ]
      ]
     ],
@@ -3060,19 +3060,19 @@ window.AA_DATA = {
       ],
       [
        "Corporate",
-       "₹10 Crore"
+       "Rp10 miliar"
       ],
       [
        "Customer",
-       "₹2 Crore"
+       "Rp2 miliar"
       ],
       [
        "Home Loan Facility",
-       "₹1 Crore"
+       "Rp1 miliar"
       ],
       [
        "Loan Booked",
-       "₹50 Lakh"
+       "Rp500 juta"
       ]
      ]
     ],
@@ -3089,18 +3089,18 @@ window.AA_DATA = {
       ],
       [
        "Approved",
-       "₹1.00.00.000"
+       "Rp1.000.000.000"
       ],
       [
        "Utilized (sudah dipakai)",
-       "₹40.00.000"
+       "Rp400.000.000"
       ],
       [
        "Available",
-       "₹60.00.000"
+       "Rp600.000.000"
       ]
      ],
-     "Booking pinjaman lain ₹20L → utilized ₹60L, available ₹40L — Temenos update otomatis. Validasi saat booking: limit aktif, disetujui, belum expired, amount dalam available, currency valid, produk ter-link."
+     "Booking pinjaman lain Rp200 juta → utilized Rp600 juta, available Rp400 juta — Temenos update otomatis. Validasi saat booking: limit aktif, disetujui, belum expired, amount dalam available, currency valid, produk ter-link."
     ],
     [
      "h",
@@ -3112,11 +3112,11 @@ window.AA_DATA = {
     ],
     [
      "box",
-     "LTV = Loan Amount ÷ Collateral Value × 100<br>Contoh: ₹50L ÷ ₹75L = 66,67% (batas bank mis. 80% → diterima)."
+     "LTV = Loan Amount ÷ Collateral Value × 100<br>Contoh: Rp500 juta ÷ Rp750 juta = 66,67% (batas bank mis. 80% → diterima)."
     ],
     [
      "p",
-     "Satu collateral bisa menopang beberapa pinjaman sesuai kebijakan: properti ₹1Cr → Loan A ₹40L + Loan B ₹20L = alokasi ₹60L, sisa nilai jaminan ₹40L."
+     "Satu collateral bisa menopang beberapa pinjaman sesuai kebijakan: properti Rp1 miliar → Loan A Rp400 juta + Loan B Rp200 juta = alokasi Rp600 juta, sisa nilai jaminan Rp400 juta."
     ],
     [
      "flow",
@@ -3173,7 +3173,7 @@ window.AA_DATA = {
     ],
     [
      "p",
-     "ABC Bank ingin meluncurkan \"Home Loan – Salaried Customers\": bunga 8,25%, tenure 20 tahun, fee 1%, EMI bulanan, partial prepayment diizinkan, maksimum ₹1 Crore — semuanya via konfigurasi AA tanpa coding."
+     "ABC Bank ingin meluncurkan \"Home Loan – Salaried Customers\": bunga 8,25%, tenure 20 tahun, fee 1%, EMI bulanan, partial prepayment diizinkan, maksimum Rp1 miliar — semuanya via konfigurasi AA tanpa coding."
     ],
     [
      "flow",

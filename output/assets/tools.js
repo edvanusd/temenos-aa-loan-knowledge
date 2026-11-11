@@ -57,8 +57,8 @@
      ======================================================= */
   let QS = null; // sesi quiz yang sedang berjalan (di memori)
   const isTF = (q) => q.o.length === 2 && /^true$/i.test(q.o[0]) && /^false$/i.test(q.o[1]);
-  function newSession(indices) {
-    QS = { i: 0, items: indices.map((qi) => { const q = D.QUIZ[qi]; const opts = q.o.map((t, k) => ({ t, k })); return { qi, opts: isTF(q) ? opts : shuffle(opts), ans: null }; }), phase: 'run' };
+  function newSession(indices, mode) {
+    QS = { mode, i: 0, items: indices.map((qi) => { const q = D.QUIZ[qi]; const opts = q.o.map((t, k) => ({ t, k })); return { qi, opts: isTF(q) ? opts : shuffle(opts), ans: null }; }), phase: 'run' };
   }
   function bestPct() { const a = Store.data.quiz.attempts; return a.length ? Math.max(...a.map((x) => Math.round((x.s / x.t) * 100))) : null; }
 
@@ -79,7 +79,7 @@
           ${qd.attempts.length ? `<div class="panel pad" style="margin-top:18px;display:flex;justify-content:space-between;align-items:end;gap:20px;flex-wrap:wrap">
             <div><div class="small muted">Skor terbaik</div><div style="font-size:28px;font-weight:800">${best}%</div><div class="small muted">${qd.attempts.length} sesi dikerjakan</div></div>
             <div><div class="small muted" style="margin-bottom:6px">Sesi terakhir</div><div class="history">${hist.map((a) => `<span style="height:40px" title="${a.s}/${a.t}"><i style="height:${(a.s / a.t) * 100}%"></i></span>`).join('')}</div></div>
-            <button class="btn btn-quiet btn-sm" data-reset>Hapus riwayat quiz</button></div>` : ''}
+            ${AA.Cloud && AA.Cloud.user ? '<a class="btn btn-quiet btn-sm" href="#/akun">Lihat riwayat di akun</a>' : '<button class="btn btn-quiet btn-sm" data-reset>Hapus riwayat quiz</button>'}</div>` : ''}
           ${QS && QS.phase === 'run' ? `<div class="panel pad" style="margin-top:12px;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap"><span>Ada sesi yang belum selesai: soal ${QS.i + 1} dari ${QS.items.length}.</span><button class="btn btn-line btn-sm" data-resume>Lanjutkan sesi</button></div>` : ''}`;
       }
       function run() {
@@ -110,7 +110,8 @@
         const s = QS.items.filter((x) => x.ans === D.QUIZ[x.qi].a).length, t = QS.items.length;
         const qd = Store.data.quiz;
         if (!QS.saved) {
-          qd.attempts.push({ s, t, d: Date.now() }); if (qd.attempts.length > 30) qd.attempts.shift();
+          qd.attempts.push({ s, t, d: Date.now(), mode: QS.mode }); if (qd.attempts.length > 200) qd.attempts.shift();
+          AA.sync({ t: 'quiz', mode: QS.mode, score: s, total: t, answers: QS.items.filter((x) => x.ans !== null).map((x) => ({ q: x.qi, h: AA.quizHash(x.qi), a: x.ans, ok: x.ans === D.QUIZ[x.qi].a })) });
           const w = new Set(qd.wrong);
           QS.items.forEach((x) => { if (x.ans === null) return; if (x.ans === D.QUIZ[x.qi].a) w.delete(x.qi); else w.add(x.qi); });
           qd.wrong = Array.from(w); Store.save(); QS.saved = true;
@@ -133,9 +134,9 @@
       }
       function start(mode) {
         const all = D.QUIZ.map((_, i) => i);
-        if (mode === 'quick') newSession(shuffle(all).slice(0, 10));
-        else if (mode === 'all') newSession(shuffle(all));
-        else newSession(shuffle(Store.data.quiz.wrong.slice()));
+        if (mode === 'quick') newSession(shuffle(all).slice(0, 10), mode);
+        else if (mode === 'all') newSession(shuffle(all), mode);
+        else newSession(shuffle(Store.data.quiz.wrong.slice()), 'wrong');
         run();
       }
       function answer(k) { const it = QS.items[QS.i]; if (it.ans !== null) return; it.ans = k; run(); }
@@ -215,7 +216,7 @@
         if (!list.length) { out.innerHTML = `<div class="panel pad" style="margin-top:18px"><p class="muted">Semua pertanyaan di kategori ini sudah kamu kuasai. Matikan “Sembunyikan yang sudah dikuasai” untuk mengulang.</p></div>`; return; }
         if (mode === 'cards') {
           out.innerHTML = '<div class="fc-wrap"></div>';
-          offCards = flashcards($('.fc-wrap', out), list, { onKnown: (c) => { Store.data.ivqKnown[c.id] = 1; Store.save(); updKnown(); }, doneHint: 'Jawaban yang kamu tandai “Sudah bisa” tersimpan.' });
+          offCards = flashcards($('.fc-wrap', out), list, { onKnown: (c) => { Store.data.ivqKnown[c.id] = 1; Store.save(); updKnown(); AA.sync({ t: 'card', deck: 'interview', id: c.id, known: true }); }, doneHint: 'Jawaban yang kamu tandai “Sudah bisa” tersimpan.' });
           return;
         }
         let html = '', lastCat = null;
@@ -228,7 +229,7 @@
       }
       out.addEventListener('click', (e) => {
         const kb = e.target.closest('[data-known]');
-        if (kb) { const id = kb.dataset.known; if (Store.data.ivqKnown[id]) delete Store.data.ivqKnown[id]; else Store.data.ivqKnown[id] = 1; Store.save(); updKnown(); draw(); const el = $(`.qa[data-id="${id}"]`, out); if (el) { el.classList.add('open'); } return; }
+        if (kb) { const id = kb.dataset.known; if (Store.data.ivqKnown[id]) delete Store.data.ivqKnown[id]; else Store.data.ivqKnown[id] = 1; Store.save(); updKnown(); AA.sync({ t: 'card', deck: 'interview', id, known: !!Store.data.ivqKnown[id] }); draw(); const el = $(`.qa[data-id="${id}"]`, out); if (el) { el.classList.add('open'); } return; }
         const b = e.target.closest('.qa > button.q'); if (!b) return;
         const qa = b.parentElement, o = !qa.classList.contains('open'); qa.classList.toggle('open', o); b.setAttribute('aria-expanded', String(o));
       });
@@ -270,7 +271,7 @@
         if (off) { off(); off = null; }
         if (mode === 'cards') {
           out.innerHTML = '<div class="fc-wrap"></div>';
-          off = flashcards($('.fc-wrap', out), terms.map((x) => ({ id: x.id, q: x.t, a: x.d, cat: 'Istilah' })), { onKnown: (c) => { Store.data.glKnown[c.id] = 1; Store.save(); updK(); } });
+          off = flashcards($('.fc-wrap', out), terms.map((x) => ({ id: x.id, q: x.t, a: x.d, cat: 'Istilah' })), { onKnown: (c) => { Store.data.glKnown[c.id] = 1; Store.save(); updK(); AA.sync({ t: 'card', deck: 'glossary', id: c.id, known: true }); } });
           return;
         }
         const s = q.value.trim().toLowerCase();
@@ -295,7 +296,6 @@
   /* =======================================================
      KALKULATOR ANGSURAN
      ======================================================= */
-  const CUR = { IDR: { s: 'Rp', d: 0 }, USD: { s: '$', d: 2 }, INR: { s: '₹', d: 0 } };
   const TYPES = { CONSTANT: 'Annuity: angsuran sama tiap periode', LINEAR: 'Principal tetap, bunga menurun', ACTUAL: 'Hanya bunga, principal dibayar di akhir' };
   function schedule(P, n, rate, type) {
     const r = rate / 100 / 12, rows = [];
@@ -313,9 +313,9 @@
   }
   AA.schedule = schedule;
   const PRESETS = [
-    { l: 'Home loan di kursus', P: 5000000, n: 240, r: 8.25, c: 'INR', t: 'CONSTANT' },
-    { l: 'Workshop Term Amount', P: 40000, n: 36, r: 6, c: 'USD', t: 'LINEAR' },
-    { l: 'KPR Rp 500 juta', P: 500000000, n: 180, r: 7.5, c: 'IDR', t: 'CONSTANT' },
+    { l: 'Home loan di modul (Rp500 jt, 20 th)', P: 500000000, n: 240, r: 8.25, t: 'CONSTANT' },
+    { l: 'KPR Rp850 jt, 15 th', P: 850000000, n: 180, r: 7.5, t: 'CONSTANT' },
+    { l: 'Kredit modal kerja Rp100 jt, 3 th', P: 100000000, n: 36, r: 11, t: 'LINEAR' },
   ];
   AA.pages.kalkulator = {
     title: 'Kalkulator angsuran',
@@ -325,10 +325,7 @@
         <div class="chips" style="margin-top:16px" id="presets"><span class="small muted" style="align-self:center;margin-right:4px">Contoh:</span>${PRESETS.map((p, i) => `<button class="chip" data-p="${i}">${p.l}</button>`).join('')}</div>
         <div class="calc">
           <form class="panel calc-form" id="cf" onsubmit="return false">
-            <div class="row2">
-              <label class="field"><span>Mata uang</span><select class="input" name="c">${Object.keys(CUR).map((k) => `<option value="${k}">${k}</option>`).join('')}</select></label>
-              <label class="field"><span>Principal</span><input class="input" name="P" type="number" min="1" step="any" value="5000000"></label>
-            </div>
+            <label class="field"><span>Principal (Rp) <output data-o="P"></output></span><input class="input" name="P" type="text" inputmode="numeric" data-money value="500.000.000" style="font-family:var(--mono);font-size:16px"></label>
             <label class="field"><span>Tenor <output data-o="n"></output></span><input type="range" name="n" min="1" max="360" value="240"></label>
             <label class="field"><span>Bunga per tahun <output data-o="r"></output></span><input type="range" name="r" min="0" max="24" step="0.05" value="8.25"></label>
             <div class="field"><span>Payment type</span><div class="seg" id="ptype" style="width:100%">${Object.keys(TYPES).map((t, i) => `<button type="button" data-t="${t}" aria-pressed="${i === 0}" style="flex:1" class="mono">${t}</button>`).join('')}</div><small class="muted" id="ptdesc" style="font-size:13px"></small></div>
@@ -345,11 +342,13 @@
     mount(r, root) {
       const f = $('#cf', root);
       let type = 'CONSTANT', showAll = false;
-      const money = (v, c) => `${CUR[c].s}${fmt(v, CUR[c].d)}`;
-      const short = (v) => { const a = Math.abs(v); return a >= 1e9 ? fmt(v / 1e9, 1) + ' M' : a >= 1e6 ? fmt(v / 1e6, 1) + ' jt' : a >= 1e3 ? fmt(v / 1e3, 0) + ' rb' : fmt(v, 0); };
+      const money = (v) => AA.rp(v);
+      const words = (v) => v >= 1e12 ? fmt(v / 1e12, 2).replace(/,00$/, '') + ' triliun' : v >= 1e9 ? fmt(v / 1e9, 2).replace(/,00$/, '') + ' miliar' : v >= 1e6 ? fmt(v / 1e6, 2).replace(/,00$/, '') + ' juta' : v >= 1e3 ? fmt(v / 1e3, 0) + ' ribu' : fmt(v);
+      const short = (v) => { const a = Math.abs(v), t = (x) => fmt(x, 1).replace(/,0$/, ''); return a >= 1e9 ? t(v / 1e9) + ' M' : a >= 1e6 ? t(v / 1e6) + ' jt' : a >= 1e3 ? fmt(v / 1e3, 0) + ' rb' : fmt(v, 0); };
       function fillRange(el) { el.style.setProperty('--fill', ((el.value - el.min) / (el.max - el.min)) * 100 + '%'); }
       function calc() {
-        const P = Math.max(1, +f.P.value || 0), n = +f.n.value, rate = +f.r.value, c = f.c.value;
+        const P = Math.max(1, AA.num(f.P.value)), n = +f.n.value, rate = +f.r.value;
+        $('[data-o="P"]', f).textContent = 'Rp' + words(P);
         $$('input[type=range]', f).forEach(fillRange);
         $('[data-o="n"]', f).textContent = `${n} bulan${n >= 12 ? ` (${fmt(n / 12, n % 12 ? 1 : 0)} th)` : ''}`;
         $('[data-o="r"]', f).textContent = fmt(rate, 2) + '%';
@@ -357,19 +356,19 @@
         const S = schedule(P, n, rate, type);
         const first = S.rows[0], last = S.rows[S.rows.length - 1];
         $('#figs', root).innerHTML = `
-          <div><small>${type === 'CONSTANT' ? 'Angsuran per bulan' : type === 'LINEAR' ? 'Angsuran pertama' : 'Bunga per bulan'}</small><b>${money(type === 'ACTUAL' ? first.i : first.pay, c)}</b><span class="note">${type === 'LINEAR' ? `turun ke ${money(last.pay, c)}` : type === 'ACTUAL' ? `+ ${money(P, c)} di bulan ke-${n}` : `selama ${n} bulan`}</span></div>
-          <div><small>Total bunga</small><b>${money(S.ti, c)}</b><span class="note">${fmt((S.ti / P) * 100, 1)}% dari principal</span></div>
-          <div><small>Total dibayar</small><b>${money(S.tp, c)}</b><span class="note">principal + bunga</span></div>`;
-        drawChart(S, c, n);
+          <div><small>${type === 'CONSTANT' ? 'Angsuran per bulan' : type === 'LINEAR' ? 'Angsuran pertama' : 'Bunga per bulan'}</small><b>${money(type === 'ACTUAL' ? first.i : first.pay)}</b><span class="note">${type === 'LINEAR' ? `turun ke ${money(last.pay)}` : type === 'ACTUAL' ? `+ ${money(P)} di bulan ke-${n}` : `selama ${n} bulan`}</span></div>
+          <div><small>Total bunga</small><b>${money(S.ti)}</b><span class="note">${fmt((S.ti / P) * 100, 1)}% dari principal</span></div>
+          <div><small>Total dibayar</small><b>${money(S.tp)}</b><span class="note">principal + bunga</span></div>`;
+        drawChart(S, n);
         const all = Object.keys(TYPES).map((t) => ({ t, ...schedule(P, n, rate, t) }));
         const minI = Math.min(...all.map((x) => x.ti));
-        $('#cmp', root).innerHTML = `<div class="tbl-wrap" style="margin:0"><table class="ledger cmp"><thead><tr><th>Type</th><th class="num">Angsuran pertama</th><th class="num">Angsuran terakhir</th><th class="num">Total bunga</th></tr></thead><tbody>${all.map((x) => `<tr><td><span class="tag ${x.t === type ? 'tag-blue' : ''}">${x.t}</span></td><td class="num">${money(x.rows[0].pay, c)}</td><td class="num">${money(x.rows[x.rows.length - 1].pay, c)}</td><td class="num ${x.ti === minI ? 'best' : ''}">${money(x.ti, c)}</td></tr>`).join('')}</tbody></table></div>`;
+        $('#cmp', root).innerHTML = `<div class="tbl-wrap" style="margin:0"><table class="ledger cmp"><thead><tr><th>Type</th><th class="num">Angsuran pertama</th><th class="num">Angsuran terakhir</th><th class="num">Total bunga</th></tr></thead><tbody>${all.map((x) => `<tr><td><span class="tag ${x.t === type ? 'tag-blue' : ''}">${x.t}</span></td><td class="num">${money(x.rows[0].pay)}</td><td class="num">${money(x.rows[x.rows.length - 1].pay)}</td><td class="num ${x.ti === minI ? 'best' : ''}">${money(x.ti)}</td></tr>`).join('')}</tbody></table></div>`;
         const rows = showAll || S.rows.length <= 24 ? S.rows : S.rows.slice(0, 12);
-        $('#sched', root).innerHTML = `<div class="tbl-wrap" style="margin:0;border:0;border-top:1px solid var(--line);border-radius:0;max-height:${showAll ? '560px' : 'none'};overflow:auto"><table class="ledger"><thead><tr><th>Bulan</th><th class="num">Angsuran</th><th class="num">Principal</th><th class="num">Bunga</th><th class="num">Outstanding</th></tr></thead><tbody>${rows.map((x) => `<tr><td>${x.k}</td><td class="num">${money(x.pay, c)}</td><td class="num">${money(x.p, c)}</td><td class="num">${money(x.i, c)}</td><td class="num">${money(x.bal, c)}</td></tr>`).join('')}</tbody>
-          <tfoot><tr><td>Total</td><td class="num">${money(S.tp, c)}</td><td class="num">${money(P, c)}</td><td class="num">${money(S.ti, c)}</td><td></td></tr></tfoot></table></div>
+        $('#sched', root).innerHTML = `<div class="tbl-wrap" style="margin:0;border:0;border-top:1px solid var(--line);border-radius:0;max-height:${showAll ? '560px' : 'none'};overflow:auto"><table class="ledger"><thead><tr><th>Bulan</th><th class="num">Angsuran</th><th class="num">Principal</th><th class="num">Bunga</th><th class="num">Outstanding</th></tr></thead><tbody>${rows.map((x) => `<tr><td>${x.k}</td><td class="num">${money(x.pay)}</td><td class="num">${money(x.p)}</td><td class="num">${money(x.i)}</td><td class="num">${money(x.bal)}</td></tr>`).join('')}</tbody>
+          <tfoot><tr><td>Total</td><td class="num">${money(S.tp)}</td><td class="num">${money(P)}</td><td class="num">${money(S.ti)}</td><td></td></tr></tfoot></table></div>
           ${S.rows.length > 24 ? `<div class="showall"><button class="btn btn-quiet btn-sm" data-all>${showAll ? 'Tampilkan 12 bulan pertama saja' : `Tampilkan semua ${S.rows.length} angsuran`}</button></div>` : ''}`;
       }
-      function drawChart(S, c, n) {
+      function drawChart(S, n) {
         const byYear = n > 48;
         const data = [];
         if (byYear) { for (let y = 0; y < Math.ceil(n / 12); y++) { const g = S.rows.slice(y * 12, y * 12 + 12); data.push({ l: `Th ${y + 1}`, p: g.reduce((a, x) => a + x.p, 0), i: g.reduce((a, x) => a + x.i, 0), bal: g[g.length - 1].bal }); } }
@@ -401,7 +400,7 @@
           band.classList.add('on');
           const d = data[+band.dataset.k];
           tip.hidden = false;
-          tip.innerHTML = `<div class="tl">${byYear ? 'Tahun ' + (+band.dataset.k + 1) : d.l.replace('Bln', 'Bulan')}</div>Angsuran <b>${money(d.p + d.i, c)}</b><br>Principal <b>${money(d.p, c)}</b><br>Bunga <b>${money(d.i, c)}</b><br>Outstanding <b>${money(d.bal, c)}</b>`;
+          tip.innerHTML = `<div class="tl">${byYear ? 'Tahun ' + (+band.dataset.k + 1) : d.l.replace('Bln', 'Bulan')}</div>Angsuran <b>${money(d.p + d.i)}</b><br>Principal <b>${money(d.p)}</b><br>Bunga <b>${money(d.i)}</b><br>Outstanding <b>${money(d.bal)}</b>`;
           const rect = ch.getBoundingClientRect(), bx = band.getBoundingClientRect();
           let left = bx.left - rect.left + bx.width / 2 + 12;
           if (left + 200 > rect.width) left = bx.left - rect.left - 200;
@@ -411,9 +410,9 @@
       }
       f.addEventListener('input', calc);
       $('#ptype', root).addEventListener('click', (e) => { const b = e.target.closest('button'); if (!b) return; type = b.dataset.t; $$('#ptype button', root).forEach((x) => x.setAttribute('aria-pressed', String(x === b))); calc(); });
-      $('#presets', root).addEventListener('click', (e) => { const b = e.target.closest('[data-p]'); if (!b) return; const p = PRESETS[+b.dataset.p]; f.P.value = p.P; f.n.value = p.n; f.r.value = p.r; f.c.value = p.c; type = p.t; $$('#ptype button', root).forEach((x) => x.setAttribute('aria-pressed', String(x.dataset.t === type))); showAll = false; calc(); });
+      $('#presets', root).addEventListener('click', (e) => { const b = e.target.closest('[data-p]'); if (!b) return; const p = PRESETS[+b.dataset.p]; f.P.value = fmt(p.P); f.n.value = p.n; f.r.value = p.r; type = p.t; $$('#ptype button', root).forEach((x) => x.setAttribute('aria-pressed', String(x.dataset.t === type))); showAll = false; calc(); });
       $('#sched', root).addEventListener('click', (e) => { if (e.target.closest('[data-all]')) { showAll = !showAll; calc(); } });
-      f.c.value = 'INR';
+      AA.bindMoney(f);
       calc();
     },
   };
@@ -433,12 +432,12 @@
         ${head('Alat', 'Simulator overdue', 'Geser jumlah hari keterlambatan (DPD) untuk melihat status aging property OVERDUE, klasifikasi pinjaman, penalty interest, dan late fee yang menumpuk.')}
         <div class="calc">
           <form class="panel calc-form" id="of" onsubmit="return false">
-            <label class="field"><span>EMI yang tidak dibayar</span><input class="input" name="due" type="number" min="0" value="42603"></label>
+            <label class="field"><span>EMI yang tidak dibayar (Rp)</span><input class="input" name="due" type="text" inputmode="numeric" data-money value="4.260.300"></label>
             <div class="row2">
               <label class="field"><span>Rate normal (%)</span><input class="input" name="rate" type="number" step="0.01" value="8.25"></label>
               <label class="field"><span>Penalty spread (%)</span><input class="input" name="pen" type="number" step="0.01" value="2"></label>
             </div>
-            <label class="field"><span>Late payment fee</span><input class="input" name="fee" type="number" min="0" value="500"></label>
+            <label class="field"><span>Late payment fee (Rp)</span><input class="input" name="fee" type="text" inputmode="numeric" data-money value="50.000"></label>
             <div style="border-top:1px solid var(--line);padding-top:16px" class="field"><span>Hitung DPD dari tanggal</span>
               <div class="row2"><label class="field"><span style="font-weight:500">Due date</span><input class="input" type="date" name="dd" value="2026-09-05"></label><label class="field"><span style="font-weight:500">Tanggal cek</span><input class="input" type="date" name="td" value="2026-10-05"></label></div>
             </div>
@@ -462,7 +461,8 @@
     },
     mount(r, root) {
       const f = $('#of', root), dpd = $('#dpd', root);
-      const v = (n) => +f[n].value || 0;
+      const v = (n) => AA.num(f[n].value);
+      AA.bindMoney(f);
       // Slider memakai skala akar yang sama dengan bilah status
       const toD = (v) => Math.round(MAXD * Math.pow(v / 1000, 2));
       const toV = (d) => Math.round(Math.sqrt(d / MAXD) * 1000);
@@ -476,9 +476,9 @@
         $$('.odt-row', root).forEach((row, ri) => $$('.odt-bar div', row).forEach((el, k) => el.classList.toggle('on', (ri ? CLS : AGE)[k] === (ri ? cl : ag))));
         const due = v('due'), pen = (due * v('pen') / 100 * d) / 365, fee = d >= 1 ? v('fee') : 0;
         $('#ofig', root).innerHTML = `
-          <div><small>Penalty interest</small><b>${fmt(pen, 2)}</b><span class="note">${v('pen')}% × ${d} hari / 365</span></div>
-          <div><small>Late fee</small><b>${fmt(fee)}</b><span class="note">${d >= 1 ? 'dibebankan sekali' : 'belum berlaku'}</span></div>
-          <div><small>Untuk regularisasi</small><b>${fmt(due + pen + fee, 2)}</b><span class="note">EMI + penalty + fee</span></div>`;
+          <div><small>Penalty interest</small><b>${AA.rp(pen)}</b><span class="note">${v('pen')}% × ${d} hari / 365</span></div>
+          <div><small>Late fee</small><b>${AA.rp(fee)}</b><span class="note">${d >= 1 ? 'dibebankan sekali' : 'belum berlaku'}</span></div>
+          <div><small>Untuk regularisasi</small><b>${AA.rp(due + pen + fee)}</b><span class="note">EMI + penalty + fee</span></div>`;
         const notes = {
           Due: `Bill masih berstatus DUE. Belum ada penalty; jika dibayar hari ini, arrangement tetap regular.`,
           Grace: `Masa grace: tagihan sudah lewat due date, DPD mulai dihitung. Bunga efektif atas tunggakan ${fmt(v('rate') + v('pen'), 2)}% (normal ${fmt(v('rate'), 2)}% + penalty ${fmt(v('pen'), 2)}%).`,
